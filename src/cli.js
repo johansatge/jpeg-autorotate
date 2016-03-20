@@ -73,7 +73,7 @@
     {
         if (error)
         {
-            console.log(path + ': ' + colors.yellow(error.message));
+            console.log(path + ': ' + (error.code == 'correct_orientation' ? colors.yellow(error.message) : colors.red(error.message)));
         }
         else
         {
