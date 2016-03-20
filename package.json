@@ -1,0 +1,35 @@
+{
+  "name": "jpeg-autorotate",
+  "version": "1.0.0",
+  "description": "@todo",
+  "author": "Johan Satgé",
+  "bin": {
+    "jpeg-autorotate": "./src/cli.js"
+  },
+  "scripts": {},
+  "main": "src/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/johansatge/jpeg-autorotate"
+  },
+  "bugs": {
+    "url": "https://github.com/johansatge/jpeg-autorotate/issues"
+  },
+  "keywords": [
+    "jpeg",
+    "rotate",
+    "autorotate",
+    "exif",
+    "cli"
+  ],
+  "dependencies": {
+    "async": "^1.5.2",
+    "colors": "^1.1.2",
+    "lwip": "0.0.8",
+    "piexifjs": "^1.0.0",
+    "yargs": "^4.3.1"
+  },
+  "devDependencies": {},
+  "preferGlobal": true,
+  "license": "MIT"
+}
