@@ -28,9 +28,10 @@
             'jpeg-autorotate <path>',
             '',
             colors.underline('Options'),
-            '--jobs=<number>   How many concurrent jobs to run (default is 10)',
-            '--version         Outputs current version',
-            '--help            Outputs help',
+            '--quality=<0-100>   JPEG output quality',
+            '--jobs=<number>     How many concurrent jobs to run (default is 10)',
+            '--version           Outputs current version',
+            '--help              Outputs help',
             ''
         ];
         console.log(help.join('\n'));
