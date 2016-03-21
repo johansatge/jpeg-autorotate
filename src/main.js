@@ -8,8 +8,19 @@ var CustomError = require('./error.js');
 
 var m = {};
 
-m.rotate = function(path, module_callback)
+m.errors = {};
+m.errors.read_file = 'read_file';
+m.errors.read_exif = 'read_exif';
+m.errors.no_orientation = 'no_orientation';
+m.errors.unknown_orientation = 'unknown_orientation';
+m.errors.correct_orientation = 'correct_orientation';
+m.errors.rotate_file = 'rotate_file';
+
+m.rotate = function(path, options, module_callback)
 {
+
+    var quality = typeof options.quality !== 'undefined' ? parseInt(options.quality) : 100;
+    quality = !isNaN(quality) && quality >= 0 && quality <= 100 ? quality : 100;
 
     var jpeg_buffer = null;
     var jpeg_exif_data = null;
@@ -26,7 +37,7 @@ m.rotate = function(path, module_callback)
     {
         if (error)
         {
-            module_callback(new CustomError('read_file', 'Could not read file (' + error.message + ')'), null);
+            module_callback(new CustomError(m.errors.read_file, 'Could not read file (' + error.message + ')'), null);
             return;
         }
         try
@@ -36,7 +47,7 @@ m.rotate = function(path, module_callback)
         }
         catch (error)
         {
-            module_callback(new CustomError('read_exif', 'Could not read EXIF data (' + error.message + ')'), null);
+            module_callback(new CustomError(m.errors.read_exif, 'Could not read EXIF data (' + error.message + ')'), null);
             return;
         }
 
@@ -50,18 +61,18 @@ m.rotate = function(path, module_callback)
     {
         if (typeof jpeg_exif_data['0th'] === 'undefined' || typeof jpeg_exif_data['0th'][piexif.ImageIFD.Orientation] === 'undefined')
         {
-            module_callback(new CustomError('no_orientation', 'No orientation tag found in EXIF'), null);
+            module_callback(new CustomError(m.errors.no_orientation, 'No orientation tag found in EXIF'), null);
             return;
         }
         jpeg_orientation = parseInt(jpeg_exif_data['0th'][piexif.ImageIFD.Orientation]);
         if (isNaN(jpeg_orientation) || jpeg_orientation < 1 || jpeg_orientation > 8)
         {
-            module_callback(new CustomError('unknown_orientation', 'Unknown orientation (' + jpeg_orientation + ')'), null);
+            module_callback(new CustomError(m.errors.unknown_orientation, 'Unknown orientation (' + jpeg_orientation + ')'), null);
             return;
         }
         if (jpeg_orientation === 1)
         {
-            module_callback(new CustomError('correct_orientation', 'Orientation already correct'), null);
+            module_callback(new CustomError(m.errors.correct_orientation, 'Orientation already correct'), null);
             return;
         }
 
@@ -136,7 +147,7 @@ m.rotate = function(path, module_callback)
                     batch.rotate(270);
                     break;
             }
-            batch.toBuffer('jpg', callback);
+            batch.toBuffer('jpg', {quality: quality}, callback);
         });
     }
 
@@ -149,7 +160,7 @@ m.rotate = function(path, module_callback)
     {
         if (error)
         {
-            module_callback(new CustomError('rotate_file', 'Could not rotate image (' + error.message + ')', null));
+            module_callback(new CustomError(m.errors.rotate_file, 'Could not rotate image (' + error.message + ')', null));
             return;
         }
 
@@ -171,10 +182,7 @@ m.rotate = function(path, module_callback)
         var exif_bytes = piexif.dump(jpeg_exif_data);
 
         var updated_jpeg_buffer = new Buffer(piexif.insert(exif_bytes, buffers.image.toString('binary')), 'binary');
-        fs.writeFile(path.replace(/\.jpg$/, '-output.jpg'), updated_jpeg_buffer, function(error)
-        {
-            module_callback(error ? new CustomError('write_file', 'Could not write file (' + error.message + ')') : null, !error ? jpeg_orientation : null);
-        });
+        module_callback(null, updated_jpeg_buffer, jpeg_orientation);
     }
 
 };

@@ -7,6 +7,7 @@
     var colors = require('colors');
     var argv = require('yargs').argv;
     var async = require('async');
+    var fs = require('fs');
 
     var jpegautorotate = require('./main.js');
     var manifest = require('../package.json');
@@ -42,7 +43,9 @@
         process.exit(0);
     }
 
-    var jobs = typeof argv.jobs !== 'undefined' && argv.jobs.toString().search(/^[0-9]+$/) === 0 ? parseInt(argv.jobs) : 10
+    var jobs = typeof argv.jobs !== 'undefined' && argv.jobs.toString().search(/^[0-9]+$/) === 0 ? parseInt(argv.jobs) : 10;
+    var quality = typeof argv.quality !== 'undefined' && argv.quality.toString().search(/^[0-9]+$/) === 0 ? parseInt(argv.quality) : 100;
+
     var queue = async.queue(_processFile, jobs);
     queue.drain = _onAllFilesProcessed;
     argv._.map(function(path)
@@ -57,9 +60,17 @@
      */
     function _processFile(task, callback)
     {
-        jpegautorotate.rotate(task.path, function(error, orientation)
+        jpegautorotate.rotate(task.path, {quality: quality}, function(error, buffer, orientation)
         {
-            callback(error, task.path, orientation);
+            if (error)
+            {
+                callback(error, task.path, orientation);
+                return;
+            }
+            fs.writeFile(task.path.replace(/\.jpg$/, '-output.jpg'), buffer, function(error)
+            {
+                callback(error, task.path, orientation);
+            });
         });
     }
 
@@ -73,7 +84,7 @@
     {
         if (error)
         {
-            console.log(path + ': ' + (error.code == 'correct_orientation' ? colors.yellow(error.message) : colors.red(error.message)));
+            console.log(path + ': ' + (error.code == jpegautorotate.errors.correct_orientation ? colors.yellow(error.message) : colors.red(error.message)));
         }
         else
         {

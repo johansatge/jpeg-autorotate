@@ -34,11 +34,24 @@ npm install jpeg-autorotate --global
 
 ## CLI usage
 
-@todo
+```bash
+$ jpeg-autorotate /Users/johan/IMG_1234.jpg --quality=85
+```
 
 ## Programmatic usage
 
-@todo
+```javascript
+var jpegautorotate = require('jpeg-autorotate');
+jpegautorotate.rotate('/Users/johan/IMG_1234.jpg', {quality: 85}, function(error, buffer, orientation)
+{
+    if (error)
+    {
+        console.log('An error occurred when rotating the file: ' + error.message);
+        return;
+    }
+    // Do whatever you need with the buffer: write in a file, pipe to an image manipulation module...
+});
+```
 
 ## Changelog
 
