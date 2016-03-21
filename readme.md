@@ -3,63 +3,139 @@
 ![Dependencies](https://img.shields.io/david/johansatge/jpeg-autorotate.svg)
 ![devDependencies](https://img.shields.io/david/dev/johansatge/jpeg-autorotate.svg)
 
-# jpeg-autorotate
-
 ![Icon](icon.png)
 
 > Rotates JPEG images based on EXIF orientation.
 
 ---
 
-* [What is it for, what does it do](#what-is-it-for-what-does-it-do)
+* [What does it do](#what-does-it-do)
 * [Installation](#installation)
-* [CLI usage](#cli-usage)
-* [Programmatic usage](#programmatic-usage)
+* [Usage](#usage)
+    * [CLI](#cli)
+    * [Node module](#node-module)
+        * [Sample usage](#sample-usage)
+        * [Error handling](#error-handling)
+    * [Options](#options)
 * [Changelog](#changelog)
 * [License](#license)
 * [Credits](#credits)
 
-## What is it for, what does it do
+## What does it do
 
-@todo
+This tool applies the right orientation to a JPEG image, based on its EXIF tag. More precisely, it:
+
+* Rotates the pixels
+* Rotates the thumbnail, if there is one
+* Writes `1` in the `Orientation` EXIF tag (this is the default orientation)
+* Updates the `PixelXDimension` and `PixelYDimension` EXIF values
+* Does **not** alter the other EXIF tags
+
+It may be useful, if:
+
+* You need to compress your image with a tool that strips EXIF data without rotating the pixels (like the great [ImageOptim](https://imageoptim.com/))
+* You need to upload the image, but the destination application does not support EXIF orientation (like [WordPress](https://wordpress.org/))
+* You just want to get rid of the orientation tag, while leaving the other tags **intact**
+
+> More information about EXIF orientation: [EXIF Orientation Handling Is a Ghetto](http://www.daveperrett.com/articles/2012/07/28/exif-orientation-handling-is-a-ghetto/)
 
 ## Installation
 
 Install with [npm](https://www.npmjs.com/):
 
 ```bash
-npm install jpeg-autorotate --global
-# --global isn't required if you plan to use the tool as a node module
+$ npm install jpeg-autorotate --global
+# --global isn't required if you plan to use the node module
 ```
 
-## CLI usage
+## Usage
+
+### CLI
 
 ```bash
-$ jpeg-autorotate /Users/johan/IMG_1234.jpg --quality=85
+# Rotates a single image
+$ jpeg-autorotate /Users/johan/IMG_1234.jpg
+# Rotates a set of images
+$ jpeg-autorotate /Users/johan/images/IMG_*.jpg
 ```
 
-## Programmatic usage
+### Node module
+
+The tool is available as a Node module. It will load the image, apply the rotation, and return the binary data as a [Buffer](https://nodejs.org/api/buffer.html), allowing you to:
+
+* Save it on disk
+* Load it in an image processing module (like [jimp](https://github.com/oliver-moran/jimp), [lwip](https://github.com/EyalAr/lwip), [gm](https://github.com/aheckmann/gm)...)
+* ...
+
+#### Sample usage
 
 ```javascript
 var jpegautorotate = require('jpeg-autorotate');
-jpegautorotate.rotate('/Users/johan/IMG_1234.jpg', {quality: 85}, function(error, buffer, orientation)
+var options = {quality: 85};
+jpegautorotate.rotate('/Users/johan/IMG_1234.jpg', options, function(error, buffer, orientation)
 {
     if (error)
     {
         console.log('An error occurred when rotating the file: ' + error.message);
         return;
     }
-    // Do whatever you need with the buffer: write in a file, pipe to an image manipulation module...
+    console.log('Orientation was: ' + orientation);
+    // ...
+    // Do whatever you need with the buffer
+    // ...
 });
+```
+
+#### Error handling
+
+The `error` object returned in the callback contains a readable `message`, but also a `code` for better error handling. Available codes are the following:
+
+```javascript
+var jo = require('jpeg-autorotate');
+
+jo.errors.read_file; // File could not be opened
+jo.errors.read_exif; // EXIF data could not be read
+jo.errors.no_orientation; // No orientation tag was found
+jo.errors.unknown_orientation; // The orientation tag is unknown
+jo.errors.correct_orientation; // The image orientation is already correct
+jo.errors.rotate_file; // An error occurred when rotating the image
+```
+
+Sample usage:
+
+```javascript
+var jo = require('jpeg-autorotate');
+jo.rotate('/image.jpg', function(error, buffer, orientation)
+{
+    if (error && error.code === jo.errors.correct_orientation)
+    {
+        console.log('The orientation of this image is already correct!');
+    }
+});
+```
+
+### Options
+
+The following options are available.
+
+| Option | Context | Default value | Description
+| --- | --- | --- | --- |
+| `quality` | *CLI, module* | 100 | Quality of the JPEG - Uncompressed by default, so the resulting image may be bigger than the original one |
+| `jobs` | *CLI* | 10 | Max number of concurrent processes, when loading several images
+
+To use options with the CLI:
+
+```
+$ jpeg-autorotate /image.jpg --jobs=100 --quality=85
 ```
 
 ## Changelog
 
-*This project uses [semver](http://semver.org/).*
+This project uses [semver](http://semver.org/).
 
 | Version | Date | Notes |
 | --- | --- | --- |
-| `1.0.0` | @todo | Initial version |
+| `1.0.0` | 2016-03-21 | Initial version |
 
 ## License
 
@@ -72,6 +148,4 @@ This project is released under the [MIT License](license.md).
 * [colors](https://github.com/Marak/colors.js)
 * [yargs](https://github.com/bcoe/yargs)
 * [async](https://github.com/caolan/async)
-
-
-http://www.daveperrett.com/articles/2012/07/28/exif-orientation-handling-is-a-ghetto/
+* [FontAwesome](http://fontawesome.io/)
