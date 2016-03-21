@@ -1,13 +1,13 @@
 {
   "name": "jpeg-autorotate",
   "version": "1.0.0",
-  "description": "@todo",
+  "description": "Rotates JPEG images based on EXIF orientation",
   "author": "Johan Satgé",
   "bin": {
     "jpeg-autorotate": "./src/cli.js"
   },
   "scripts": {},
-  "main": "src/index.js",
+  "main": "src/main.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/johansatge/jpeg-autorotate"
@@ -19,7 +19,9 @@
     "jpeg",
     "rotate",
     "autorotate",
+    "orientation",
     "exif",
+    "thumbnail",
     "cli"
   ],
   "dependencies": {
