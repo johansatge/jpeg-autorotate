@@ -67,7 +67,7 @@
                 callback(error, task.path, orientation);
                 return;
             }
-            fs.writeFile(task.path.replace(/\.jpg$/, '-output.jpg'), buffer, function(error)
+            fs.writeFile(task.path, buffer, function(error)
             {
                 callback(error, task.path, orientation);
             });
