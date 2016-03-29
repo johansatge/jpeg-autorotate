@@ -135,6 +135,7 @@ This project uses [semver](http://semver.org/).
 
 | Version | Date | Notes |
 | --- | --- | --- |
+| `1.0.3` | 2016-03-29 | Displays help when no path given in CLI |
 | `1.0.2` | 2016-03-21 | Adds missing options in CLI help |
 | `1.0.1` | 2016-03-21 | Fixes NPM publishing fail ^_^ |
 | `1.0.0` | 2016-03-21 | Initial version |

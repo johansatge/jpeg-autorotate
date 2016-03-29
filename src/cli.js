@@ -18,7 +18,7 @@
         process.exit(0);
     }
 
-    if (argv.help)
+    if (argv.help || typeof argv._ === 'undefined' || argv._.length === 0)
     {
         var help = [
             '',
@@ -35,12 +35,6 @@
             ''
         ];
         console.log(help.join('\n'));
-        process.exit(0);
-    }
-
-    if (typeof argv._ === 'undefined' || argv._.length === 0)
-    {
-        console.log('Nothing to do');
         process.exit(0);
     }
 
