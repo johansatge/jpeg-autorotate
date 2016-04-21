@@ -70,9 +70,9 @@ The tool is available as a Node module. It will load the image, apply the rotati
 #### Sample usage
 
 ```javascript
-var jpegautorotate = require('jpeg-autorotate');
+var jo = require('jpeg-autorotate');
 var options = {quality: 85};
-jpegautorotate.rotate('/Users/johan/IMG_1234.jpg', options, function(error, buffer, orientation)
+jo.rotate('/Users/johan/IMG_1234.jpg', options, function(error, buffer, orientation)
 {
     if (error)
     {
