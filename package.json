@@ -6,7 +6,9 @@
   "bin": {
     "jpeg-autorotate": "./src/cli.js"
   },
-  "scripts": {},
+  "scripts": {
+      "test": "mocha test/test.js"
+  },
   "main": "src/main.js",
   "repository": {
     "type": "git",
