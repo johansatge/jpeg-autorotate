@@ -1,4 +1,5 @@
 ![Version](https://img.shields.io/npm/v/jpeg-autorotate.svg)
+[![Build Status](https://travis-ci.org/johansatge/jpeg-autorotate.svg?branch=master)](https://travis-ci.org/johansatge/jpeg-autorotate)
 ![Downloads](https://img.shields.io/npm/dm/jpeg-autorotate.svg)
 ![Dependencies](https://img.shields.io/david/johansatge/jpeg-autorotate.svg)
 ![devDependencies](https://img.shields.io/david/dev/johansatge/jpeg-autorotate.svg)
