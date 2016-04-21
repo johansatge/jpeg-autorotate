@@ -31,7 +31,10 @@
     "piexifjs": "^1.0.0",
     "yargs": "^4.3.1"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "mocha": "^2.4.5"
+  },
   "preferGlobal": true,
   "license": "MIT"
 }

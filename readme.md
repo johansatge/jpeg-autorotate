@@ -152,3 +152,6 @@ This project is released under the [MIT License](license.md).
 * [yargs](https://github.com/bcoe/yargs)
 * [async](https://github.com/caolan/async)
 * [FontAwesome](http://fontawesome.io/)
+* [Chai](http://chaijs.com/)
+* [Mocha](http://mochajs.org)
+* [exif-orientation-examples](https://github.com/recurser/exif-orientation-examples)
