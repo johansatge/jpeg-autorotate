@@ -38,7 +38,9 @@ It may be useful, if:
 * You need to upload the image, but the destination application does not support EXIF orientation (like [WordPress](https://wordpress.org/))
 * You just want to get rid of the orientation tag, while leaving the other tags **intact**
 
-> More information about EXIF orientation: [EXIF Orientation Handling Is a Ghetto](http://www.daveperrett.com/articles/2012/07/28/exif-orientation-handling-is-a-ghetto/)
+> More information about EXIF:
+> * [EXIF Orientation Handling Is a Ghetto](http://www.daveperrett.com/articles/2012/07/28/exif-orientation-handling-is-a-ghetto/)
+> * [Standard EXIF Tags](http://www.exiv2.org/tags.html)
 
 ## Installation
 
@@ -136,6 +138,7 @@ This project uses [semver](http://semver.org/).
 
 | Version | Date | Notes |
 | --- | --- | --- |
+| `1.1.0` | 2016-04-23 | Adds test suite, removes lwip dependency |
 | `1.0.3` | 2016-03-29 | Displays help when no path given in CLI |
 | `1.0.2` | 2016-03-21 | Adds missing options in CLI help |
 | `1.0.1` | 2016-03-21 | Fixes NPM publishing fail ^_^ |
@@ -148,11 +151,11 @@ This project is released under the [MIT License](license.md).
 ## Credits
 
 * [piexifjs](https://github.com/hMatoba/piexifjs)
-* [lwip](https://github.com/EyalAr/lwip/)
+* [jpeg-js](https://github.com/eugeneware/jpeg-js)
+* [exif-orientation-examples](https://github.com/recurser/exif-orientation-examples)
+* [async](https://github.com/caolan/async)
 * [colors](https://github.com/Marak/colors.js)
 * [yargs](https://github.com/bcoe/yargs)
-* [async](https://github.com/caolan/async)
 * [FontAwesome](http://fontawesome.io/)
 * [Chai](http://chaijs.com/)
 * [Mocha](http://mochajs.org)
-* [exif-orientation-examples](https://github.com/recurser/exif-orientation-examples)
