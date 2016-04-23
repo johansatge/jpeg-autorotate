@@ -9,25 +9,25 @@ var jo = require('../src/main.js');
 describe('jpeg-autorotate', function()
 {
 
-    itShouldTransform(__dirname + '/images/image_2.jpg', 'image_2.jpg');
-    itShouldTransform(__dirname + '/images/image_3.jpg', 'image_3.jpg');
-    itShouldTransform(__dirname + '/images/image_4.jpg', 'image_4.jpg');
-    itShouldTransform(__dirname + '/images/image_5.jpg', 'image_5.jpg');
-    itShouldTransform(__dirname + '/images/image_6.jpg', 'image_6.jpg');
-    itShouldTransform(__dirname + '/images/image_7.jpg', 'image_7.jpg');
-    itShouldTransform(__dirname + '/images/image_8.jpg', 'image_8.jpg');
-    itShouldTransform(__dirname + '/images/image_exif.jpg', 'image_exif.jpg');
+    itShouldTransform(__dirname + '/samples/image_2.jpg', 'image_2.jpg');
+    itShouldTransform(__dirname + '/samples/image_3.jpg', 'image_3.jpg');
+    itShouldTransform(__dirname + '/samples/image_4.jpg', 'image_4.jpg');
+    itShouldTransform(__dirname + '/samples/image_5.jpg', 'image_5.jpg');
+    itShouldTransform(__dirname + '/samples/image_6.jpg', 'image_6.jpg');
+    itShouldTransform(__dirname + '/samples/image_7.jpg', 'image_7.jpg');
+    itShouldTransform(__dirname + '/samples/image_8.jpg', 'image_8.jpg');
+    itShouldTransform(__dirname + '/samples/image_exif.jpg', 'image_exif.jpg');
 
     it('Should return an error if the orientation is 1', function(done)
     {
-        jo.rotate(__dirname + '/images/image_1.jpg', {}, function(error, buffer, orientation)
+        jo.rotate(__dirname + '/samples/image_1.jpg', {}, function(error, buffer, orientation)
         {
             error.should.have.property('code').equal(jo.errors.correct_orientation);
             done();
         });
     });
 
-    it('Should return an error if the image can\'t be opened', function(done)
+    it('Should return an error if the image does not exist', function(done)
     {
         jo.rotate('foo.jpg', {}, function(error, buffer, orientation)
         {
@@ -36,9 +36,18 @@ describe('jpeg-autorotate', function()
         });
     });
 
+    it('Should return an error if the file is not an image', function(done)
+    {
+        jo.rotate(__dirname + '/samples/textfile.md', {}, function(error, buffer, orientation)
+        {
+            error.should.have.property('code').equal(jo.errors.read_exif);
+            done();
+        });
+    });
+
     it('Should return an error if the image has no orientation tag', function(done)
     {
-        jo.rotate(__dirname + '/images/image_no_orientation.jpg', {}, function(error, buffer, orientation)
+        jo.rotate(__dirname + '/samples/image_no_orientation.jpg', {}, function(error, buffer, orientation)
         {
             error.should.have.property('code').equal(jo.errors.no_orientation);
             done();
@@ -47,7 +56,7 @@ describe('jpeg-autorotate', function()
 
     it('Should return an error if the image has an unknown orientation tag', function(done)
     {
-        jo.rotate(__dirname + '/images/image_unknown_orientation.jpg', {}, function(error, buffer, orientation)
+        jo.rotate(__dirname + '/samples/image_unknown_orientation.jpg', {}, function(error, buffer, orientation)
         {
             error.should.have.property('code').equal(jo.errors.unknown_orientation);
             done();
@@ -57,8 +66,8 @@ describe('jpeg-autorotate', function()
     it('Should run on CLI', function(done)
     {
         var cli = __dirname + '/../src/cli.js';
-        var ref = __dirname + '/images/image_2.jpg';
-        var tmp = __dirname + '/images/image_2_cli.jpg';
+        var ref = __dirname + '/samples/image_2.jpg';
+        var tmp = __dirname + '/samples/image_2_cli.jpg';
         var command = 'cp ' + ref + ' ' + tmp + ' && ' + cli + ' ' + tmp + ' && rm ' + tmp;
         exec(command, function(error, stdout, stderr)
         {

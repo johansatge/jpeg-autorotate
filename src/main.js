@@ -38,7 +38,7 @@ m.rotate = function(path, options, module_callback)
     {
         if (error)
         {
-            module_callback(new CustomError(m.errors.read_file, 'Could not read file (' + error.message + ')'), null);
+            module_callback(new CustomError(m.errors.read_file, 'Could not read file (' + error.message + ')'), null, null);
             return;
         }
         try
@@ -48,23 +48,23 @@ m.rotate = function(path, options, module_callback)
         }
         catch (error)
         {
-            module_callback(new CustomError(m.errors.read_exif, 'Could not read EXIF data (' + error.message + ')'), null);
+            module_callback(new CustomError(m.errors.read_exif, 'Could not read EXIF data (' + error.message + ')'), null, null);
             return;
         }
         if (typeof jpeg_exif_data['0th'] === 'undefined' || typeof jpeg_exif_data['0th'][piexif.ImageIFD.Orientation] === 'undefined')
         {
-            module_callback(new CustomError(m.errors.no_orientation, 'No orientation tag found in EXIF'), null);
+            module_callback(new CustomError(m.errors.no_orientation, 'No orientation tag found in EXIF'), null, null);
             return;
         }
         jpeg_orientation = parseInt(jpeg_exif_data['0th'][piexif.ImageIFD.Orientation]);
         if (isNaN(jpeg_orientation) || jpeg_orientation < 1 || jpeg_orientation > 8)
         {
-            module_callback(new CustomError(m.errors.unknown_orientation, 'Unknown orientation (' + jpeg_orientation + ')'), null);
+            module_callback(new CustomError(m.errors.unknown_orientation, 'Unknown orientation (' + jpeg_orientation + ')'), null, null);
             return;
         }
         if (jpeg_orientation === 1)
         {
-            module_callback(new CustomError(m.errors.correct_orientation, 'Orientation already correct'), null);
+            module_callback(new CustomError(m.errors.correct_orientation, 'Orientation already correct'), null, null);
             return;
         }
         async.parallel({image: _rotateImage, thumbnail: _rotateThumbnail}, _onRotatedImages);
@@ -108,7 +108,7 @@ m.rotate = function(path, options, module_callback)
     {
         if (error)
         {
-            module_callback(new CustomError(m.errors.rotate_file, 'Could not rotate image (' + error.message + ')', null));
+            module_callback(new CustomError(m.errors.rotate_file, 'Could not rotate image (' + error.message + ')'), null, null);
             return;
         }
         jpeg_exif_data['0th'][piexif.ImageIFD.Orientation] = 1;

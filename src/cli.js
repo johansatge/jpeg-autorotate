@@ -9,7 +9,7 @@
     var async = require('async');
     var fs = require('fs');
 
-    var jpegautorotate = require('./main.js');
+    var jo = require('./main.js');
     var manifest = require('../package.json');
 
     if (argv.version)
@@ -55,7 +55,7 @@
      */
     function _processFile(task, callback)
     {
-        jpegautorotate.rotate(task.path, {quality: quality}, function(error, buffer, orientation)
+        jo.rotate(task.path, {quality: quality}, function(error, buffer, orientation)
         {
             if (error)
             {
@@ -79,7 +79,7 @@
     {
         if (error)
         {
-            console.log(path + ': ' + (error.code == jpegautorotate.errors.correct_orientation ? colors.yellow(error.message) : colors.red(error.message)));
+            console.log(path + ': ' + (error.code == jo.errors.correct_orientation ? colors.yellow(error.message) : colors.red(error.message)));
         }
         else
         {
