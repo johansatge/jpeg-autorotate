@@ -1,3 +1,4 @@
+
 'use strict';
 
 var m = function(code, message)

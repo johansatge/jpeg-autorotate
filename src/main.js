@@ -1,10 +1,11 @@
+
 'use strict';
 
 var fs = require('fs');
 var async = require('async');
 var piexif = require('piexifjs');
-var lwip = require('lwip');
 var CustomError = require('./error.js');
+var transform = require('./transform.js');
 
 var m = {};
 
@@ -50,15 +51,6 @@ m.rotate = function(path, options, module_callback)
             module_callback(new CustomError(m.errors.read_exif, 'Could not read EXIF data (' + error.message + ')'), null);
             return;
         }
-
-        _checkAndUpdateOrientation();
-    }
-
-    /**
-     * Checks the orientation in the EXIF tags, and starts the update process if needed
-     */
-    function _checkAndUpdateOrientation()
-    {
         if (typeof jpeg_exif_data['0th'] === 'undefined' || typeof jpeg_exif_data['0th'][piexif.ImageIFD.Orientation] === 'undefined')
         {
             module_callback(new CustomError(m.errors.no_orientation, 'No orientation tag found in EXIF'), null);
@@ -75,7 +67,6 @@ m.rotate = function(path, options, module_callback)
             module_callback(new CustomError(m.errors.correct_orientation, 'Orientation already correct'), null);
             return;
         }
-
         async.parallel({image: _rotateImage, thumbnail: _rotateThumbnail}, _onRotatedImages);
     }
 
@@ -85,9 +76,9 @@ m.rotate = function(path, options, module_callback)
      */
     function _rotateImage(callback)
     {
-        _rotateFromOrientation(jpeg_buffer, function(error, buffer)
+        transform.do(jpeg_buffer, jpeg_orientation, quality, function(error, buffer, width, height)
         {
-            callback(error, !error ? buffer : null);
+            callback(error, {buffer: !error ? buffer : null, width: width, height: height});
         });
     }
 
@@ -99,89 +90,42 @@ m.rotate = function(path, options, module_callback)
     {
         if (typeof jpeg_exif_data['thumbnail'] === 'undefined' || jpeg_exif_data['thumbnail'] === null)
         {
-            callback(null, null);
+            callback(null, {buffer: null, width: 0, height: 0});
             return;
         }
-        _rotateFromOrientation(new Buffer(jpeg_exif_data['thumbnail'], 'binary'), function(error, buffer)
+        transform.do(new Buffer(jpeg_exif_data['thumbnail'], 'binary'), jpeg_orientation, quality, function(error, buffer, width, height)
         {
-            callback(null, !error ? buffer : null);
+            callback(null, {buffer: !error ? buffer : null, width: width, height: height});
         });
     }
 
     /**
-     * Opens an image buffer and applies the rotation
-     * @param buffer
-     * @param callback
-     */
-    function _rotateFromOrientation(buffer, callback)
-    {
-        lwip.open(buffer, 'jpg', function(error, image)
-        {
-            if (error)
-            {
-                callback(error, null);
-                return;
-            }
-            var batch = image.batch();
-            switch (jpeg_orientation)
-            {
-                case 2:
-                    batch.flip('x');
-                    break;
-                case 3:
-                    batch.rotate(180);
-                    break;
-                case 4:
-                    batch.flip('y');
-                    break;
-                case 5:
-                    batch.rotate(90).flip('x');
-                    break;
-                case 6:
-                    batch.rotate(90);
-                    break;
-                case 7:
-                    batch.rotate(270).flip('x');
-                    break;
-                case 8:
-                    batch.rotate(270);
-                    break;
-            }
-            batch.toBuffer('jpg', {quality: quality}, callback);
-        });
-    }
-
-    /**
-     * Updates EXIF data and writes, when the image and its thumbnail have been rotated
+     * Merges EXIF data in the rotated buffer and returns
      * @param error
      * @param buffers
      */
-    function _onRotatedImages(error, buffers)
+    function _onRotatedImages(error, images)
     {
         if (error)
         {
             module_callback(new CustomError(m.errors.rotate_file, 'Could not rotate image (' + error.message + ')', null));
             return;
         }
-
-        if (jpeg_orientation !== 2 && jpeg_orientation !== 4)
-        {
-            var exif_width = typeof jpeg_exif_data['Exif'][piexif.ExifIFD.PixelXDimension] !== 'undefined' ? jpeg_exif_data['Exif'][piexif.ExifIFD.PixelXDimension] : false;
-            var exif_height = typeof jpeg_exif_data['Exif'][piexif.ExifIFD.PixelYDimension] !== 'undefined' ? jpeg_exif_data['Exif'][piexif.ExifIFD.PixelYDimension] : false;
-            if (exif_width !== false && exif_height !== false)
-            {
-                jpeg_exif_data['Exif'][piexif.ExifIFD.PixelXDimension] = exif_height;
-                jpeg_exif_data['Exif'][piexif.ExifIFD.PixelYDimension] = exif_width;
-            }
-        }
         jpeg_exif_data['0th'][piexif.ImageIFD.Orientation] = 1;
-        if (buffers.thumbnail !== null)
+        if (typeof jpeg_exif_data['Exif'][piexif.ExifIFD.PixelXDimension] !== 'undefined')
         {
-            jpeg_exif_data['thumbnail'] = buffers.thumbnail.toString('binary');
+            jpeg_exif_data['Exif'][piexif.ExifIFD.PixelXDimension] = images.image.width;
+        }
+        if (typeof jpeg_exif_data['Exif'][piexif.ExifIFD.PixelYDimension] !== 'undefined')
+        {
+            jpeg_exif_data['Exif'][piexif.ExifIFD.PixelYDimension] = images.image.height;
+        }
+        if (images.thumbnail.buffer !== null)
+        {
+            jpeg_exif_data['thumbnail'] = images.thumbnail.buffer.toString('binary');
         }
         var exif_bytes = piexif.dump(jpeg_exif_data);
-
-        var updated_jpeg_buffer = new Buffer(piexif.insert(exif_bytes, buffers.image.toString('binary')), 'binary');
+        var updated_jpeg_buffer = new Buffer(piexif.insert(exif_bytes, images.image.buffer.toString('binary')), 'binary');
         module_callback(null, updated_jpeg_buffer, jpeg_orientation);
     }
 

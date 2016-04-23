@@ -1,13 +1,13 @@
 {
   "name": "jpeg-autorotate",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "Rotates JPEG images based on EXIF orientation",
   "author": "Johan Satgé",
   "bin": {
     "jpeg-autorotate": "./src/cli.js"
   },
   "scripts": {
-      "test": "mocha test/test.js"
+    "test": "mocha test/test.js"
   },
   "main": "src/main.js",
   "repository": {
@@ -29,7 +29,7 @@
   "dependencies": {
     "async": "^1.5.2",
     "colors": "^1.1.2",
-    "lwip": "0.0.8",
+    "jpeg-js": "^0.1.2",
     "piexifjs": "^1.0.0",
     "yargs": "^4.3.1"
   },
