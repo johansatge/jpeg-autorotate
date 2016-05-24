@@ -16,10 +16,14 @@ m.errors.no_orientation = 'no_orientation';
 m.errors.unknown_orientation = 'unknown_orientation';
 m.errors.correct_orientation = 'correct_orientation';
 m.errors.rotate_file = 'rotate_file';
-
+/**
+ *
+ * @param {string|Buffer} path
+ * @param options
+ * @param module_callback
+ */
 m.rotate = function(path, options, module_callback)
 {
-
     var quality = typeof options.quality !== 'undefined' ? parseInt(options.quality) : 100;
     quality = !isNaN(quality) && quality >= 0 && quality <= 100 ? quality : 100;
 
@@ -27,7 +31,12 @@ m.rotate = function(path, options, module_callback)
     var jpeg_exif_data = null;
     var jpeg_orientation = null;
 
-    fs.readFile(path, _onReadFile);
+    if(typeof(path) == 'string') {
+        fs.readFile(path, _onReadFile);
+    }
+    else {
+        _onReadFile(null, path);
+    }
 
     /**
      * Tries to read EXIF data when the image has been loaded
@@ -48,23 +57,23 @@ m.rotate = function(path, options, module_callback)
         }
         catch (error)
         {
-            module_callback(new CustomError(m.errors.read_exif, 'Could not read EXIF data (' + error.message + ')'), null, null);
+            module_callback(new CustomError(m.errors.read_exif, 'Could not read EXIF data (' + error.message + ')'), buffer, null);
             return;
         }
         if (typeof jpeg_exif_data['0th'] === 'undefined' || typeof jpeg_exif_data['0th'][piexif.ImageIFD.Orientation] === 'undefined')
         {
-            module_callback(new CustomError(m.errors.no_orientation, 'No orientation tag found in EXIF'), null, null);
+            module_callback(new CustomError(m.errors.no_orientation, 'No orientation tag found in EXIF'), buffer, null);
             return;
         }
         jpeg_orientation = parseInt(jpeg_exif_data['0th'][piexif.ImageIFD.Orientation]);
         if (isNaN(jpeg_orientation) || jpeg_orientation < 1 || jpeg_orientation > 8)
         {
-            module_callback(new CustomError(m.errors.unknown_orientation, 'Unknown orientation (' + jpeg_orientation + ')'), null, null);
+            module_callback(new CustomError(m.errors.unknown_orientation, 'Unknown orientation (' + jpeg_orientation + ')'), buffer, null);
             return;
         }
         if (jpeg_orientation === 1)
         {
-            module_callback(new CustomError(m.errors.correct_orientation, 'Orientation already correct'), null, null);
+            module_callback(new CustomError(m.errors.correct_orientation, 'Orientation already correct'), buffer, null);
             return;
         }
         async.parallel({image: _rotateImage, thumbnail: _rotateThumbnail}, _onRotatedImages);
