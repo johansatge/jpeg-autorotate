@@ -1,5 +1,6 @@
 
 var should = require('chai').should();
+var expect = require('chai').expect;
 var fs = require('fs');
 var exec = require('child_process').exec;
 var piexif = require('piexifjs');
@@ -17,12 +18,14 @@ describe('jpeg-autorotate', function()
     itShouldTransform(__dirname + '/samples/image_7.jpg', 'image_7.jpg');
     itShouldTransform(__dirname + '/samples/image_8.jpg', 'image_8.jpg');
     itShouldTransform(__dirname + '/samples/image_exif.jpg', 'image_exif.jpg');
+    itShouldTransform(fs.readFileSync(__dirname + '/samples/image_8.jpg'), 'From a buffer');
 
     it('Should return an error if the orientation is 1', function(done)
     {
         jo.rotate(__dirname + '/samples/image_1.jpg', {}, function(error, buffer, orientation)
         {
             error.should.have.property('code').equal(jo.errors.correct_orientation);
+            Buffer.isBuffer(buffer).should.be.ok;
             done();
         });
     });
@@ -32,6 +35,8 @@ describe('jpeg-autorotate', function()
         jo.rotate('foo.jpg', {}, function(error, buffer, orientation)
         {
             error.should.have.property('code').equal(jo.errors.read_file);
+            expect(buffer).to.equal(null);
+            expect(orientation).to.equal(null);
             done();
         });
     });
@@ -41,6 +46,30 @@ describe('jpeg-autorotate', function()
         jo.rotate(__dirname + '/samples/textfile.md', {}, function(error, buffer, orientation)
         {
             error.should.have.property('code').equal(jo.errors.read_exif);
+            expect(buffer).to.equal(null);
+            expect(orientation).to.equal(null);
+            done();
+        });
+    });
+
+    it('Should return an error if the path is not a string/buffer', function(done)
+    {
+        jo.rotate(['foo'], {}, function(error, buffer, orientation)
+        {
+            error.should.have.property('code').equal(jo.errors.read_file);
+            expect(buffer).to.equal(null);
+            expect(orientation).to.equal(null);
+            done();
+        });
+    });
+
+    it('Should work if `options` is not an object', function(done)
+    {
+        jo.rotate(__dirname + '/samples/image_2.jpg', 'options', function(error, buffer, orientation)
+        {
+            expect(error).to.equal(null);
+            Buffer.isBuffer(buffer).should.be.ok;
+            expect(orientation).to.equal(2);
             done();
         });
     });
@@ -50,6 +79,8 @@ describe('jpeg-autorotate', function()
         jo.rotate(__dirname + '/samples/image_no_orientation.jpg', {}, function(error, buffer, orientation)
         {
             error.should.have.property('code').equal(jo.errors.no_orientation);
+            Buffer.isBuffer(buffer).should.be.ok;
+            expect(orientation).to.equal(null);
             done();
         });
     });
@@ -59,6 +90,8 @@ describe('jpeg-autorotate', function()
         jo.rotate(__dirname + '/samples/image_unknown_orientation.jpg', {}, function(error, buffer, orientation)
         {
             error.should.have.property('code').equal(jo.errors.unknown_orientation);
+            Buffer.isBuffer(buffer).should.be.ok;
+            expect(orientation).to.equal(null);
             done();
         });
     });
@@ -82,19 +115,19 @@ describe('jpeg-autorotate', function()
 });
 
 /**
- * Tries to transform the given path, and checks data integrity (EXIF, dimensions)
- * @param path
+ * Tries to transform the given path/buffer, and checks data integrity (EXIF, dimensions)
+ * @param path_or_buffer
  * @param label
  */
-function itShouldTransform(path, label)
+function itShouldTransform(path_or_buffer, label)
 {
     it('Should rotate image (' + label + ')', function(done)
     {
         this.timeout(10000);
-        var orig_buffer = fs.readFileSync(path);
+        var orig_buffer = typeof path_or_buffer === 'string' ? fs.readFileSync(path_or_buffer) : path_or_buffer;
         var orig_exif = piexif.load(orig_buffer.toString('binary'));
         var orig_jpeg = jpegjs.decode(orig_buffer);
-        jo.rotate(path, {}, function(error, buffer, orientation)
+        jo.rotate(path_or_buffer, {}, function(error, buffer, orientation)
         {
             if (error)
             {
