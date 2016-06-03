@@ -16,26 +16,28 @@ m.errors.no_orientation = 'no_orientation';
 m.errors.unknown_orientation = 'unknown_orientation';
 m.errors.correct_orientation = 'correct_orientation';
 m.errors.rotate_file = 'rotate_file';
-/**
- *
- * @param {string|Buffer} path
- * @param options
- * @param module_callback
- */
-m.rotate = function(path, options, module_callback)
+
+m.rotate = function(path_or_buffer, options, module_callback)
 {
-    var quality = typeof options.quality !== 'undefined' ? parseInt(options.quality) : 100;
+    var quality = typeof options === 'object' && typeof options.quality !== 'undefined' ? parseInt(options.quality) : 100;
     quality = !isNaN(quality) && quality >= 0 && quality <= 100 ? quality : 100;
+    module_callback = typeof module_callback === 'function' ? module_callback : function(){};
 
     var jpeg_buffer = null;
     var jpeg_exif_data = null;
     var jpeg_orientation = null;
 
-    if(typeof(path) == 'string') {
-        fs.readFile(path, _onReadFile);
+    if (typeof path_or_buffer === 'string')
+    {
+        fs.readFile(path_or_buffer, _onReadFile);
     }
-    else {
-        _onReadFile(null, path);
+    else if (typeof path_or_buffer === 'object' && Buffer.isBuffer(path_or_buffer))
+    {
+        _onReadFile(null, path_or_buffer);
+    }
+    else
+    {
+        _onReadFile(new Error('Not a file path or buffer'), null);
     }
 
     /**
