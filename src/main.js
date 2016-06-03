@@ -59,7 +59,7 @@ m.rotate = function(path_or_buffer, options, module_callback)
         }
         catch (error)
         {
-            module_callback(new CustomError(m.errors.read_exif, 'Could not read EXIF data (' + error.message + ')'), buffer, null);
+            module_callback(new CustomError(m.errors.read_exif, 'Could not read EXIF data (' + error.message + ')'), null, null);
             return;
         }
         if (typeof jpeg_exif_data['0th'] === 'undefined' || typeof jpeg_exif_data['0th'][piexif.ImageIFD.Orientation] === 'undefined')
