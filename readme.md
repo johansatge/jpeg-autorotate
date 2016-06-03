@@ -75,7 +75,8 @@ The tool is available as a Node module. It will load the image, apply the rotati
 ```javascript
 var jo = require('jpeg-autorotate');
 var options = {quality: 85};
-jo.rotate('/Users/johan/IMG_1234.jpg', options, function(error, buffer, orientation)
+var path = '/Users/johan/IMG_1234.jpg'; // You can use a Buffer, too
+jo.rotate(path, options, function(error, buffer, orientation)
 {
     if (error)
     {
@@ -84,7 +85,7 @@ jo.rotate('/Users/johan/IMG_1234.jpg', options, function(error, buffer, orientat
     }
     console.log('Orientation was: ' + orientation);
     // ...
-    // Do whatever you need with the buffer
+    // Do whatever you need with the resulting buffer
     // ...
 });
 ```
@@ -138,6 +139,7 @@ This project uses [semver](http://semver.org/).
 
 | Version | Date | Notes |
 | --- | --- | --- |
+| `2.0.0` | 2016-06-03 | Supports buffers in entry<br>Returns a buffer even if there was an error<br>Improves tests |
 | `1.1.0` | 2016-04-23 | Adds test suite, removes lwip dependency |
 | `1.0.3` | 2016-03-29 | Displays help when no path given in CLI |
 | `1.0.2` | 2016-03-21 | Adds missing options in CLI help |
