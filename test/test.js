@@ -99,15 +99,23 @@ describe('jpeg-autorotate', function()
         })
     })
 
-    it('Should run on CLI', function(done)
+    it('Should run on CLI (with glob support)', function(done)
     {
-        var cli = __dirname + '/../src/cli.js'
-        var ref = __dirname + '/samples/image_2.jpg'
-        var tmp = __dirname + '/samples/image_2_cli.jpg'
-        var command = 'cp ' + ref + ' ' + tmp + ' && ' + cli + ' ' + tmp + ' && rm ' + tmp
-        exec(command, function(error, stdout)
+        var command = `
+            cp test/samples/image_2.jpg test/samples/image_2.cli.jpg &&
+            cp test/samples/image_3.jpg test/samples/image_3.cli.jpg &&
+            cp test/samples/image_4.jpg test/samples/image_4.cli.jpg &&
+            ./src/cli.js test/samples/image_2.cli.jpg "test/samples/image_{3,4}.cli.jpg" &&
+            rm test/samples/image_2.cli.jpg &&
+            rm test/samples/image_3.cli.jpg &&
+            rm test/samples/image_4.cli.jpg
+        `
+        exec(command, function(error, stdout, stderr)
         {
             stdout.should.be.a('string').and.contain('Processed (Orientation was 2)')
+            stdout.should.be.a('string').and.contain('Processed (Orientation was 3)')
+            stdout.should.be.a('string').and.contain('Processed (Orientation was 4)')
+            stderr.should.equal('')
             done()
         })
     })

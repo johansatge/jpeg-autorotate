@@ -60,6 +60,8 @@ $ npm install jpeg-autorotate --global
 $ jpeg-autorotate /Users/johan/IMG_1234.jpg
 # Rotates a set of images
 $ jpeg-autorotate /Users/johan/images/IMG_*.jpg
+# Glob support
+$ jpeg-autorotate "/Users/johan/images/IMG_*.{jpg,jpeg,JPG,JPEG}"
 ```
 
 ### Node module
@@ -162,3 +164,4 @@ This project is released under the [MIT License](license.md).
 * [Chai](http://chaijs.com/)
 * [Mocha](http://mochajs.org)
 * [eslint](http://eslint.org)
+* [glob](https://github.com/isaacs/node-glob)

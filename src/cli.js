@@ -8,6 +8,7 @@
     var argv = require('yargs').argv
     var async = require('async')
     var fs = require('fs')
+    var glob = require('glob')
 
     var jo = require('./main.js')
     var manifest = require('../package.json')
@@ -45,7 +46,18 @@
     queue.drain = _onAllFilesProcessed
     argv._.map(function(path)
     {
-        queue.push({path: path}, _onFileProcessed)
+        glob(path, {}, function(error, files)
+        {
+            if (error)
+            {
+                _onFileProcessed(error, path, null)
+                return
+            }
+            files.map(function(file)
+            {
+                queue.push({path: file}, _onFileProcessed)
+            })
+        })
     })
 
     /**
