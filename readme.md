@@ -141,6 +141,7 @@ This project uses [semver](http://semver.org/).
 
 | Version | Date | Notes |
 | --- | --- | --- |
+| `3.0.0` | 2017-02-11 | CLI supports `glob`<br>No more `node 0.12` support<br>Drop semicolons<br>Add eslint rules |
 | `2.0.0` | 2016-06-03 | Supports buffers in entry<br>Returns a buffer even if there was an error<br>Improves tests |
 | `1.1.0` | 2016-04-23 | Adds test suite, removes lwip dependency |
 | `1.0.3` | 2016-03-29 | Displays help when no path given in CLI |
