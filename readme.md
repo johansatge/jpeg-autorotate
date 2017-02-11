@@ -161,3 +161,4 @@ This project is released under the [MIT License](license.md).
 * [FontAwesome](http://fontawesome.io/)
 * [Chai](http://chaijs.com/)
 * [Mocha](http://mochajs.org)
+* [eslint](http://eslint.org)

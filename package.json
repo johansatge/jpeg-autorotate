@@ -38,6 +38,9 @@
     "eslint": "^3.15.0",
     "mocha": "^3.2.0"
   },
+  "engines" : {
+    "node" : ">=4"
+  },
   "preferGlobal": true,
   "license": "MIT"
 }
