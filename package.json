@@ -27,15 +27,15 @@
     "cli"
   ],
   "dependencies": {
-    "async": "^2.1.2",
+    "async": "^2.1.4",
     "colors": "^1.1.2",
     "jpeg-js": "^0.2.0",
     "piexifjs": "^1.0.0",
-    "yargs": "^6.3.0"
+    "yargs": "^6.6.0"
   },
   "devDependencies": {
     "chai": "^3.5.0",
-    "mocha": "^3.1.2"
+    "mocha": "^3.2.0"
   },
   "preferGlobal": true,
   "license": "MIT"
