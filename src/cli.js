@@ -2,20 +2,20 @@
 (function(process)
 {
 
-    'use strict';
+    'use strict'
 
-    var colors = require('colors');
-    var argv = require('yargs').argv;
-    var async = require('async');
-    var fs = require('fs');
+    var colors = require('colors')
+    var argv = require('yargs').argv
+    var async = require('async')
+    var fs = require('fs')
 
-    var jo = require('./main.js');
-    var manifest = require('../package.json');
+    var jo = require('./main.js')
+    var manifest = require('../package.json')
 
     if (argv.version)
     {
-        console.log(manifest.name + ' ' + manifest.version);
-        process.exit(0);
+        console.log(manifest.name + ' ' + manifest.version)
+        process.exit(0)
     }
 
     if (argv.help || typeof argv._ === 'undefined' || argv._.length === 0)
@@ -33,20 +33,20 @@
             '--version           Outputs current version',
             '--help              Outputs help',
             ''
-        ];
-        console.log(help.join('\n'));
-        process.exit(0);
+        ]
+        console.log(help.join('\n'))
+        process.exit(0)
     }
 
-    var jobs = typeof argv.jobs !== 'undefined' && argv.jobs.toString().search(/^[0-9]+$/) === 0 ? parseInt(argv.jobs) : 10;
-    var quality = typeof argv.quality !== 'undefined' && argv.quality.toString().search(/^[0-9]+$/) === 0 ? parseInt(argv.quality) : 100;
+    var jobs = typeof argv.jobs !== 'undefined' && argv.jobs.toString().search(/^[0-9]+$/) === 0 ? parseInt(argv.jobs) : 10
+    var quality = typeof argv.quality !== 'undefined' && argv.quality.toString().search(/^[0-9]+$/) === 0 ? parseInt(argv.quality) : 100
 
-    var queue = async.queue(_processFile, jobs);
-    queue.drain = _onAllFilesProcessed;
+    var queue = async.queue(_processFile, jobs)
+    queue.drain = _onAllFilesProcessed
     argv._.map(function(path)
     {
-        queue.push({path: path}, _onFileProcessed);
-    });
+        queue.push({path: path}, _onFileProcessed)
+    })
 
     /**
      * Processes a file
@@ -59,14 +59,14 @@
         {
             if (error)
             {
-                callback(error, task.path, orientation);
-                return;
+                callback(error, task.path, orientation)
+                return
             }
             fs.writeFile(task.path, buffer, function(error)
             {
-                callback(error, task.path, orientation);
-            });
-        });
+                callback(error, task.path, orientation)
+            })
+        })
     }
 
     /**
@@ -79,11 +79,11 @@
     {
         if (error)
         {
-            console.log(path + ': ' + (error.code == jo.errors.correct_orientation ? colors.yellow(error.message) : colors.red(error.message)));
+            console.log(path + ': ' + (error.code === jo.errors.correct_orientation ? colors.yellow(error.message) : colors.red(error.message)))
         }
         else
         {
-            console.log(path + ': ' + colors.green('Processed (Orientation was ' + orientation + ')'));
+            console.log(path + ': ' + colors.green('Processed (Orientation was ' + orientation + ')'))
         }
     }
 
@@ -92,7 +92,7 @@
      */
     function _onAllFilesProcessed()
     {
-        process.exit(0);
+        process.exit(0)
     }
 
-})(process);
+})(process)
