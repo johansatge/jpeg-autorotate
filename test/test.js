@@ -1,11 +1,14 @@
 
-var should = require('chai').should()
 var expect = require('chai').expect
 var fs = require('fs')
 var exec = require('child_process').exec
 var piexif = require('piexifjs')
 var jpegjs = require('jpeg-js')
 var jo = require('../src/main.js')
+var describe = require('mocha').describe
+var it = require('mocha').it
+
+require('chai').should()
 
 describe('jpeg-autorotate', function()
 {
@@ -22,7 +25,7 @@ describe('jpeg-autorotate', function()
 
     it('Should return an error if the orientation is 1', function(done)
     {
-        jo.rotate(__dirname + '/samples/image_1.jpg', {}, function(error, buffer, orientation)
+        jo.rotate(__dirname + '/samples/image_1.jpg', {}, function(error, buffer)
         {
             error.should.have.property('code').equal(jo.errors.correct_orientation)
             Buffer.isBuffer(buffer).should.be.ok
@@ -102,7 +105,7 @@ describe('jpeg-autorotate', function()
         var ref = __dirname + '/samples/image_2.jpg'
         var tmp = __dirname + '/samples/image_2_cli.jpg'
         var command = 'cp ' + ref + ' ' + tmp + ' && ' + cli + ' ' + tmp + ' && rm ' + tmp
-        exec(command, function(error, stdout, stderr)
+        exec(command, function(error, stdout)
         {
             stdout.should.be.a('string').and.contain('Processed (Orientation was 2)')
             done()
@@ -137,11 +140,11 @@ function itShouldTransform(path_or_buffer, label)
             var dest_jpeg = jpegjs.decode(buffer)
             if (orientation < 5 && (orig_jpeg.width !== dest_jpeg.width || orig_jpeg.height !== dest_jpeg.height))
             {
-                throw new Eror('Dimensions do not match')
+                throw new Error('Dimensions do not match')
             }
             if (orientation >= 5 && (orig_jpeg.width !== dest_jpeg.height || orig_jpeg.height !== dest_jpeg.width))
             {
-                throw new Eror('Dimensions do not match')
+                throw new Error('Dimensions do not match')
             }
             if (!compareEXIF(orig_exif, dest_exif))
             {

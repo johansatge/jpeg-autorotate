@@ -7,7 +7,7 @@
     "jpeg-autorotate": "./src/cli.js"
   },
   "scripts": {
-    "test": "mocha test/test.js"
+    "test": "eslint . && mocha test/test.js"
   },
   "main": "src/main.js",
   "repository": {
@@ -35,6 +35,7 @@
   },
   "devDependencies": {
     "chai": "^3.5.0",
+    "eslint": "^3.15.0",
     "mocha": "^3.2.0"
   },
   "preferGlobal": true,
