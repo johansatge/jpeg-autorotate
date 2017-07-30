@@ -27,17 +27,17 @@
     "cli"
   ],
   "dependencies": {
-    "async": "^2.1.4",
+    "async": "^2.5.0",
     "colors": "^1.1.2",
-    "glob": "^7.1.1",
-    "jpeg-js": "^0.2.0",
-    "piexifjs": "^1.0.0",
-    "yargs": "^6.6.0"
+    "glob": "^7.1.2",
+    "jpeg-js": "^0.3.3",
+    "piexifjs": "^1.0.3",
+    "yargs": "^8.0.2"
   },
   "devDependencies": {
-    "chai": "^3.5.0",
-    "eslint": "^3.15.0",
-    "mocha": "^3.2.0"
+    "chai": "^4.1.0",
+    "eslint": "^4.3.0",
+    "mocha": "^3.4.2"
   },
   "engines" : {
     "node" : ">=4"
