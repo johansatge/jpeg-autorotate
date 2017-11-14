@@ -49,7 +49,7 @@ m.rotate = function(path_or_buffer, options, module_callback)
     {
         if (error)
         {
-            module_callback(new CustomError(m.errors.read_file, 'Could not read file (' + error.message + ')'), null, null)
+            module_callback(new CustomError(m.errors.read_file, 'Could not read file (' + error.message + ')'), null, null, null)
             return
         }
         try
@@ -59,23 +59,23 @@ m.rotate = function(path_or_buffer, options, module_callback)
         }
         catch (error)
         {
-            module_callback(new CustomError(m.errors.read_exif, 'Could not read EXIF data (' + error.message + ')'), null, null)
+            module_callback(new CustomError(m.errors.read_exif, 'Could not read EXIF data (' + error.message + ')'), null, null, null)
             return
         }
         if (typeof jpeg_exif_data['0th'] === 'undefined' || typeof jpeg_exif_data['0th'][piexif.ImageIFD.Orientation] === 'undefined')
         {
-            module_callback(new CustomError(m.errors.no_orientation, 'No orientation tag found in EXIF'), buffer, null)
+            module_callback(new CustomError(m.errors.no_orientation, 'No orientation tag found in EXIF'), buffer, null, null)
             return
         }
         jpeg_orientation = parseInt(jpeg_exif_data['0th'][piexif.ImageIFD.Orientation])
         if (isNaN(jpeg_orientation) || jpeg_orientation < 1 || jpeg_orientation > 8)
         {
-            module_callback(new CustomError(m.errors.unknown_orientation, 'Unknown orientation (' + jpeg_orientation + ')'), buffer, null)
+            module_callback(new CustomError(m.errors.unknown_orientation, 'Unknown orientation (' + jpeg_orientation + ')'), buffer, null, null)
             return
         }
         if (jpeg_orientation === 1)
         {
-            module_callback(new CustomError(m.errors.correct_orientation, 'Orientation already correct'), buffer, null)
+            module_callback(new CustomError(m.errors.correct_orientation, 'Orientation already correct'), buffer, null, null)
             return
         }
         async.parallel({image: _rotateImage, thumbnail: _rotateThumbnail}, _onRotatedImages)
@@ -119,7 +119,7 @@ m.rotate = function(path_or_buffer, options, module_callback)
     {
         if (error)
         {
-            module_callback(new CustomError(m.errors.rotate_file, 'Could not rotate image (' + error.message + ')'), null, null)
+            module_callback(new CustomError(m.errors.rotate_file, 'Could not rotate image (' + error.message + ')'), null, null, null)
             return
         }
         jpeg_exif_data['0th'][piexif.ImageIFD.Orientation] = 1
@@ -137,7 +137,11 @@ m.rotate = function(path_or_buffer, options, module_callback)
         }
         var exif_bytes = piexif.dump(jpeg_exif_data)
         var updated_jpeg_buffer = new Buffer(piexif.insert(exif_bytes, images.image.buffer.toString('binary')), 'binary')
-        module_callback(null, updated_jpeg_buffer, jpeg_orientation)
+        var updated_jpeg_dimensions = {
+            height: images.image.height,
+            width: images.image.width
+        }
+        module_callback(null, updated_jpeg_buffer, jpeg_orientation, updated_jpeg_dimensions)
     }
 
 }
