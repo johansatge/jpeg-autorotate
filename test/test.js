@@ -134,7 +134,7 @@ function itShouldTransform(path_or_buffer, label)
 {
     it('Should rotate image (' + label + ')', function(done)
     {
-        this.timeout(10000)
+        this.timeout(20000)
         var orig_buffer = typeof path_or_buffer === 'string' ? fs.readFileSync(path_or_buffer) : path_or_buffer
         var orig_exif = piexif.load(orig_buffer.toString('binary'))
         var orig_jpeg = jpegjs.decode(orig_buffer)
