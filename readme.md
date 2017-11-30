@@ -78,7 +78,7 @@ The tool is available as a Node module. It will load the image, apply the rotati
 var jo = require('jpeg-autorotate');
 var options = {quality: 85};
 var path = '/Users/johan/IMG_1234.jpg'; // You can use a Buffer, too
-jo.rotate(path, options, function(error, buffer, orientation)
+jo.rotate(path, options, function(error, buffer, orientation, dimensions)
 {
     if (error)
     {
@@ -86,6 +86,8 @@ jo.rotate(path, options, function(error, buffer, orientation)
         return;
     }
     console.log('Orientation was: ' + orientation);
+	console.log('Height after rotation: ' + dimensions.height);
+	console.log('Width after rotation: ' + dimensions.width);
     // ...
     // Do whatever you need with the resulting buffer
     // ...
