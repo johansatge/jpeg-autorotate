@@ -138,19 +138,18 @@ function itShouldTransform(path_or_buffer, label)
         var orig_buffer = typeof path_or_buffer === 'string' ? fs.readFileSync(path_or_buffer) : path_or_buffer
         var orig_exif = piexif.load(orig_buffer.toString('binary'))
         var orig_jpeg = jpegjs.decode(orig_buffer)
-        jo.rotate(path_or_buffer, {}, function(error, buffer, orientation)
+        jo.rotate(path_or_buffer, {}, function(error, buffer, orientation, dimensions)
         {
             if (error)
             {
                 throw error
             }
             var dest_exif = piexif.load(buffer.toString('binary'))
-            var dest_jpeg = jpegjs.decode(buffer)
-            if (orientation < 5 && (orig_jpeg.width !== dest_jpeg.width || orig_jpeg.height !== dest_jpeg.height))
+            if (orientation < 5 && (orig_jpeg.width !== dimensions.width || orig_jpeg.height !== dimensions.height))
             {
                 throw new Error('Dimensions do not match')
             }
-            if (orientation >= 5 && (orig_jpeg.width !== dest_jpeg.height || orig_jpeg.height !== dest_jpeg.width))
+            if (orientation >= 5 && (orig_jpeg.width !== dimensions.height || orig_jpeg.height !== dimensions.width))
             {
                 throw new Error('Dimensions do not match')
             }
