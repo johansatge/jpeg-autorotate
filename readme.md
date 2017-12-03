@@ -86,8 +86,8 @@ jo.rotate(path, options, function(error, buffer, orientation, dimensions)
         return;
     }
     console.log('Orientation was: ' + orientation);
-	console.log('Height after rotation: ' + dimensions.height);
-	console.log('Width after rotation: ' + dimensions.width);
+    console.log('Height after rotation: ' + dimensions.height);
+    console.log('Width after rotation: ' + dimensions.width);
     // ...
     // Do whatever you need with the resulting buffer
     // ...
@@ -143,6 +143,7 @@ This project uses [semver](http://semver.org/).
 
 | Version | Date | Notes |
 | --- | --- | --- |
+| `3.1.0` | 2017-12-03 | Output dimensions after rotation (@tayler) |
 | `3.0.1` | 2017-07-30 | Node 8 support<br>Update dependencies |
 | `3.0.0` | 2017-02-11 | CLI supports `glob`<br>No more `node 0.12` support<br>Drop semicolons<br>Add eslint rules |
 | `2.0.0` | 2016-06-03 | Supports buffers in entry<br>Returns a buffer even if there was an error<br>Improves tests |
