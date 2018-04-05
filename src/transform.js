@@ -36,16 +36,17 @@ m.do = function(buffer, orientation, quality, module_callback)
         8: {rotate: 270, flip: false},
     }
 
+    var width = orientation < 5 ? jpeg.width : jpeg.height
+    var height = orientation < 5 ? jpeg.height : jpeg.width
+
     if (transformations[orientation].rotate > 0)
     {
         new_buffer = _rotate(new_buffer, jpeg.width, jpeg.height, transformations[orientation].rotate)
     }
     if (transformations[orientation].flip)
     {
-        new_buffer = _flip(new_buffer, jpeg.width, jpeg.height)
+        new_buffer = _flip(new_buffer, width, height)
     }
-    var width = orientation < 5 ? jpeg.width : jpeg.height
-    var height = orientation < 5 ? jpeg.height : jpeg.width
 
     var new_jpeg = jpegjs.encode({data: new_buffer, width: width, height: height}, quality)
     module_callback(null, new_jpeg.data, width, height)
