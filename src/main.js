@@ -138,7 +138,7 @@ m.rotate = function(path_or_buffer, options, module_callback)
         try {
             var exif_bytes = piexif.dump(jpeg_exif_data)
         } catch (e) {
-            fs.appendFilgit e('/temp/rotatelog.txt', path_or_buffer)
+            fs.appendFile('/tmp/rotatelog.txt', path_or_buffer)
         }
 
         var updated_jpeg_buffer = new Buffer(piexif.insert(exif_bytes, images.image.buffer.toString('binary')), 'binary')
