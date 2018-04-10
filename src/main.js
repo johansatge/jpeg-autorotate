@@ -135,7 +135,12 @@ m.rotate = function(path_or_buffer, options, module_callback)
         {
             jpeg_exif_data['thumbnail'] = images.thumbnail.buffer.toString('binary')
         }
-        var exif_bytes = piexif.dump(jpeg_exif_data)
+        try {
+            var exif_bytes = piexif.dump(jpeg_exif_data)
+        } catch (e) {
+            fs.appendFileSync('/temp/rotatelog.txt', path_or_buffer)
+        }
+
         var updated_jpeg_buffer = new Buffer(piexif.insert(exif_bytes, images.image.buffer.toString('binary')), 'binary')
         var updated_jpeg_dimensions = {
             height: images.image.height,
