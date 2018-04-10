@@ -104,7 +104,7 @@ m.rotate = function(path_or_buffer, options, module_callback)
             callback(null, {buffer: null, width: 0, height: 0})
             return
         }
-        transform.do(new Buffer(jpeg_exif_data['thumbnail'], 'binary'), jpeg_orientation, quality, function(error, buffer, width, height)
+        transform.do(new Buffer(jpeg_exif_data['thumbnail'], 'binary'), jpeg_orientation, 0, function(error, buffer, width, height)
         {
             callback(null, {buffer: !error ? buffer : null, width: width, height: height})
         })
@@ -133,15 +133,12 @@ m.rotate = function(path_or_buffer, options, module_callback)
         }
         if (images.thumbnail.buffer !== null)
         {
-            jpeg_exif_data['thumbnail'] = images.thumbnail.buffer.toString('binary')
+            var data = images.thumbnail.buffer.toString('binary');
+            if(data.length <= 64000){
+                jpeg_exif_data['thumbnail'] = data;
+            }
         }
-        try {
-            var exif_bytes = piexif.dump(jpeg_exif_data)
-        } catch (e) {
-            fs.appendFile('/tmp/rotatelog.txt', path_or_buffer)
-        }
-
-        fs.appendFile('/tmp/rotatelog.txt', path_or_buffer)
+        var exif_bytes = piexif.dump(jpeg_exif_data)
         var updated_jpeg_buffer = new Buffer(piexif.insert(exif_bytes, images.image.buffer.toString('binary')), 'binary')
         var updated_jpeg_dimensions = {
             height: images.image.height,
