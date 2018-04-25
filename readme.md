@@ -6,7 +6,7 @@
 
 ![Icon](icon.png)
 
-> Rotates JPEG images based on EXIF orientation.
+> A node module to rotate JPEG images based on EXIF orientation.
 
 ---
 
@@ -24,7 +24,7 @@
 
 ## What does it do
 
-This tool applies the right orientation to a JPEG image, based on its EXIF tag. More precisely, it:
+This module applies the right orientation to a JPEG image, based on its EXIF tag. More precisely, it:
 
 * Rotates the pixels
 * Rotates the thumbnail, if there is one
