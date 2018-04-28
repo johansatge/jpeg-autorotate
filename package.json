@@ -29,9 +29,11 @@
   "dependencies": {
     "async": "^2.6.0",
     "colors": "^1.2.1",
+    "eslint-plugin-prettier": "^2.6.0",
     "glob": "^7.1.2",
     "jpeg-js": "^0.3.4",
     "piexifjs": "^1.0.4",
+    "prettier": "^1.12.1",
     "yargs": "^11.0.0"
   },
   "devDependencies": {
