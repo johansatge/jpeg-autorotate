@@ -17,6 +17,7 @@
   * [Node module](#node-module)
     * [Sample usage](#sample-usage)
     * [Error handling](#error-handling)
+    * [Thumbnail too large](#thumbnail-too-large)
   * [Options](#options)
 * [Changelog](#changelog)
 * [License](#license)
@@ -117,6 +118,24 @@ jo.rotate('/image.jpg', function(error, buffer, orientation) {
     console.log('The orientation of this image is already correct!')
   }
 })
+```
+
+#### Thumbnail too large
+
+If you get the error "Given thumbnail is too large. max 64kB", you can remove the thumbnail before rotating the image:
+
+```javascript
+import piexif from 'piexifjs'
+
+function deleteThumbnailFromExif(imageBuffer) {
+  const imageString = imageBuffer.toString('binary')
+  const exifObj = piexif.load(imageString)
+  delete exifObj.thumbnail
+  delete exifObj['1st']
+  const exifBytes = piexif.dump(exifObj)
+  const newImageString = piexif.insert(exifBytes, imageString)
+  return new Buffer(newImageString, 'binary')
+}
 ```
 
 ### Options
