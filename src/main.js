@@ -103,7 +103,7 @@ m.rotate = function(path_or_buffer, options, module_callback) {
       callback(null, {buffer: null, width: 0, height: 0})
       return
     }
-    transform.do(new Buffer(jpeg_exif_data['thumbnail'], 'binary'), jpeg_orientation, quality, function(
+    transform.do(Buffer.from(jpeg_exif_data['thumbnail'], 'binary'), jpeg_orientation, quality, function(
       error,
       buffer,
       width,
@@ -139,7 +139,7 @@ m.rotate = function(path_or_buffer, options, module_callback) {
       jpeg_exif_data['thumbnail'] = images.thumbnail.buffer.toString('binary')
     }
     const exif_bytes = piexif.dump(jpeg_exif_data)
-    const updated_jpeg_buffer = new Buffer(piexif.insert(exif_bytes, images.image.buffer.toString('binary')), 'binary')
+    const updated_jpeg_buffer = Buffer.from(piexif.insert(exif_bytes, images.image.buffer.toString('binary')), 'binary')
     const updated_jpeg_dimensions = {
       height: images.image.height,
       width: images.image.width,

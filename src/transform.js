@@ -56,7 +56,7 @@ m.do = function(buffer, orientation, quality, module_callback) {
 const _rotate = function(buffer, width, height, degrees) {
   let loops = degrees / 90
   while (loops > 0) {
-    const new_buffer = new Buffer(buffer.length)
+    const new_buffer = Buffer.alloc(buffer.length)
     let new_offset = 0
     for (let x = 0; x < width; x += 1) {
       for (let y = height - 1; y >= 0; y -= 1) {
@@ -82,7 +82,7 @@ const _rotate = function(buffer, width, height, degrees) {
  * @param height
  */
 const _flip = function(buffer, width, height) {
-  const new_buffer = new Buffer(buffer.length)
+  const new_buffer = Buffer.alloc(buffer.length)
   for (let x = 0; x < width; x += 1) {
     for (let y = 0; y < height; y += 1) {
       const offset = (width * y + x) << 2
