@@ -134,7 +134,7 @@ function deleteThumbnailFromExif(imageBuffer) {
   delete exifObj['1st']
   const exifBytes = piexif.dump(exifObj)
   const newImageString = piexif.insert(exifBytes, imageString)
-  return new Buffer(newImageString, 'binary')
+  return Buffer.from(newImageString, 'binary')
 }
 ```
 
@@ -157,17 +157,18 @@ $ jpeg-autorotate /image.jpg --jobs=100 --quality=85
 
 This project uses [semver](http://semver.org/).
 
-| Version | Date       | Notes                                                                                      |
-| ------- | ---------- | ------------------------------------------------------------------------------------------ |
-| `3.1.0` | 2017-12-03 | Output dimensions after rotation (@tayler)                                                 |
-| `3.0.1` | 2017-07-30 | Node 8 support<br>Update dependencies                                                      |
-| `3.0.0` | 2017-02-11 | CLI supports `glob`<br>No more `node 0.12` support<br>Drop semicolons<br>Add eslint rules  |
-| `2.0.0` | 2016-06-03 | Supports buffers in entry<br>Returns a buffer even if there was an error<br>Improves tests |
-| `1.1.0` | 2016-04-23 | Adds test suite, removes lwip dependency                                                   |
-| `1.0.3` | 2016-03-29 | Displays help when no path given in CLI                                                    |
-| `1.0.2` | 2016-03-21 | Adds missing options in CLI help                                                           |
-| `1.0.1` | 2016-03-21 | Fixes NPM publishing fail ^\_^                                                             |
-| `1.0.0` | 2016-03-21 | Initial version                                                                            |
+| Version | Date       | Notes                                                                                                                                |
+| ------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `4.0.0` | 2018-07-15 | Drop support for Node 4 & 5<br>Unpublish lockfile<br>Use prettier for code formatting<br>Update documentation<br>Update dependencies |
+| `3.1.0` | 2017-12-03 | Output dimensions after rotation (@tayler)                                                                                           |
+| `3.0.1` | 2017-07-30 | Node 8 support<br>Update dependencies                                                                                                |
+| `3.0.0` | 2017-02-11 | CLI supports `glob`<br>No more `node 0.12` support<br>Drop semicolons<br>Add eslint rules                                            |
+| `2.0.0` | 2016-06-03 | Supports buffers in entry<br>Returns a buffer even if there was an error<br>Improves tests                                           |
+| `1.1.0` | 2016-04-23 | Adds test suite, removes lwip dependency                                                                                             |
+| `1.0.3` | 2016-03-29 | Displays help when no path given in CLI                                                                                              |
+| `1.0.2` | 2016-03-21 | Adds missing options in CLI help                                                                                                     |
+| `1.0.1` | 2016-03-21 | Fixes NPM publishing fail ^\_^                                                                                                       |
+| `1.0.0` | 2016-03-21 | Initial version                                                                                                                      |
 
 ## License
 
@@ -186,3 +187,4 @@ This project is released under the [MIT License](license.md).
 * [Mocha](http://mochajs.org)
 * [eslint](http://eslint.org)
 * [glob](https://github.com/isaacs/node-glob)
+* [prettier](https://prettier.io/)
