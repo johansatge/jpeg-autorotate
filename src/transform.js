@@ -35,14 +35,17 @@ m.do = function(buffer, orientation, quality, module_callback) {
   if (transformations[orientation].rotate > 0) {
     new_buffer = _rotate(new_buffer, jpeg.width, jpeg.height, transformations[orientation].rotate)
   }
-  if (transformations[orientation].flip) {
-    new_buffer = _flip(new_buffer, jpeg.width, jpeg.height)
-  }
-  const width = orientation < 5 ? jpeg.width : jpeg.height
-  const height = orientation < 5 ? jpeg.height : jpeg.width
 
-  const new_jpeg = jpegjs.encode({data: new_buffer, width: width, height: height}, quality)
-  module_callback(null, new_jpeg.data, width, height)
+  const ratioWillChange = (transformations[orientation].rotate / 90) % 2 === 1
+  const destWidth = ratioWillChange ? jpeg.height : jpeg.width
+  const destHeight = ratioWillChange ? jpeg.width : jpeg.height
+
+  if (transformations[orientation].flip) {
+    new_buffer = _flip(new_buffer, destWidth, destHeight)
+  }
+
+  const new_jpeg = jpegjs.encode({data: new_buffer, width: destWidth, height: destHeight}, quality)
+  module_callback(null, new_jpeg.data, destWidth, destHeight)
 }
 
 /**
