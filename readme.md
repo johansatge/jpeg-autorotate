@@ -159,6 +159,7 @@ This project uses [semver](http://semver.org/).
 
 | Version | Date       | Notes                                                                                                                                |
 | ------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `4.0.1` | 2018-11-29 | Fix rotations `5` and `7` (issue #11)                                                                                                |
 | `4.0.0` | 2018-07-15 | Drop support for Node 4 & 5<br>Unpublish lockfile<br>Use prettier for code formatting<br>Update documentation<br>Update dependencies |
 | `3.1.0` | 2017-12-03 | Output dimensions after rotation (@tayler)                                                                                           |
 | `3.0.1` | 2017-07-30 | Node 8 support<br>Update dependencies                                                                                                |
