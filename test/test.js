@@ -132,6 +132,9 @@ function itShouldTransform(path_or_buffer, label) {
       if (!compareEXIF(orig_exif, dest_exif)) {
         throw new Error('EXIF do not match')
       }
+      if (typeof path_or_buffer === 'string') {
+        fs.writeFileSync(path_or_buffer.replace('samples/', 'samples/transformed/'), buffer)
+      }
       done()
     })
   })
