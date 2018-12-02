@@ -7,7 +7,7 @@
     "jpeg-autorotate": "./src/cli.js"
   },
   "scripts": {
-    "test": "eslint . && mocha test/test.js"
+    "test": "eslint . && mocha test/*.js"
   },
   "main": "src/main.js",
   "repository": {
