@@ -1,29 +1,38 @@
 'use strict'
 
-const expect = require('chai').expect
-const fs = require('fs')
-const exec = require('child_process').exec
-const piexif = require('piexifjs')
-const jpegjs = require('jpeg-js')
-const jo = require('../src/main.js')
+const before = require('mocha').before
 const describe = require('mocha').describe
+const exec = require('child_process').exec
+const expect = require('chai').expect
+const fs = require('fs-extra')
 const it = require('mocha').it
+const jo = require('../src/main.js')
+const jpegjs = require('jpeg-js')
+const path = require('path')
+const piexif = require('piexifjs')
+const pixelmatch = require('pixelmatch')
+const PNG = require('pngjs').PNG
+
+const tmp_path = path.join(__dirname, '.tmp')
 
 require('chai').should()
 
 describe('jpeg-autorotate', function() {
-  itShouldTransform(__dirname + '/samples/image_2.jpg', 'image_2.jpg')
-  itShouldTransform(__dirname + '/samples/image_3.jpg', 'image_3.jpg')
-  itShouldTransform(__dirname + '/samples/image_4.jpg', 'image_4.jpg')
-  itShouldTransform(__dirname + '/samples/image_5.jpg', 'image_5.jpg')
-  itShouldTransform(__dirname + '/samples/image_6.jpg', 'image_6.jpg')
-  itShouldTransform(__dirname + '/samples/image_7.jpg', 'image_7.jpg')
-  itShouldTransform(__dirname + '/samples/image_8.jpg', 'image_8.jpg')
-  itShouldTransform(__dirname + '/samples/image_exif.jpg', 'image_exif.jpg')
-  itShouldTransform(fs.readFileSync(__dirname + '/samples/image_8.jpg'), 'From a buffer')
+  before(function() {
+    return fs.emptyDir(tmp_path)
+  })
+  itShouldTransform(path.join(__dirname, '/samples/image_2.jpg'), 'image_2.jpg')
+  itShouldTransform(path.join(__dirname, '/samples/image_3.jpg'), 'image_3.jpg')
+  itShouldTransform(path.join(__dirname, '/samples/image_4.jpg'), 'image_4.jpg')
+  itShouldTransform(path.join(__dirname, '/samples/image_5.jpg'), 'image_5.jpg')
+  itShouldTransform(path.join(__dirname, '/samples/image_6.jpg'), 'image_6.jpg')
+  itShouldTransform(path.join(__dirname, '/samples/image_7.jpg'), 'image_7.jpg')
+  itShouldTransform(path.join(__dirname, '/samples/image_8.jpg'), 'image_8.jpg')
+  itShouldTransform(path.join(__dirname, '/samples/image_exif.jpg'), 'image_exif.jpg')
+  itShouldTransform(fs.readFileSync(path.join(__dirname, '/samples/image_8.jpg')), 'From a buffer')
 
   it('Should return an error if the orientation is 1', function(done) {
-    jo.rotate(__dirname + '/samples/image_1.jpg', {}, function(error, buffer) {
+    jo.rotate(path.join(__dirname, '/samples/image_1.jpg'), {}, function(error, buffer) {
       error.should.have.property('code').equal(jo.errors.correct_orientation)
       Buffer.isBuffer(buffer).should.be.ok
       done()
@@ -40,7 +49,7 @@ describe('jpeg-autorotate', function() {
   })
 
   it('Should return an error if the file is not an image', function(done) {
-    jo.rotate(__dirname + '/samples/textfile.md', {}, function(error, buffer, orientation) {
+    jo.rotate(path.join(__dirname, '/samples/textfile.md'), {}, function(error, buffer, orientation) {
       error.should.have.property('code').equal(jo.errors.read_exif)
       expect(buffer).to.equal(null)
       expect(orientation).to.equal(null)
@@ -58,7 +67,7 @@ describe('jpeg-autorotate', function() {
   })
 
   it('Should work if `options` is not an object', function(done) {
-    jo.rotate(__dirname + '/samples/image_2.jpg', 'options', function(error, buffer, orientation) {
+    jo.rotate(path.join(__dirname, '/samples/image_2.jpg'), 'options', function(error, buffer, orientation) {
       expect(error).to.equal(null)
       Buffer.isBuffer(buffer).should.be.ok
       expect(orientation).to.equal(2)
@@ -67,7 +76,7 @@ describe('jpeg-autorotate', function() {
   })
 
   it('Should return an error if the image has no orientation tag', function(done) {
-    jo.rotate(__dirname + '/samples/image_no_orientation.jpg', {}, function(error, buffer, orientation) {
+    jo.rotate(path.join(__dirname, '/samples/image_no_orientation.jpg'), {}, function(error, buffer, orientation) {
       error.should.have.property('code').equal(jo.errors.no_orientation)
       Buffer.isBuffer(buffer).should.be.ok
       expect(orientation).to.equal(null)
@@ -76,7 +85,7 @@ describe('jpeg-autorotate', function() {
   })
 
   it('Should return an error if the image has an unknown orientation tag', function(done) {
-    jo.rotate(__dirname + '/samples/image_unknown_orientation.jpg', {}, function(error, buffer, orientation) {
+    jo.rotate(path.join(__dirname, '/samples/image_unknown_orientation.jpg'), {}, function(error, buffer, orientation) {
       error.should.have.property('code').equal(jo.errors.unknown_orientation)
       Buffer.isBuffer(buffer).should.be.ok
       expect(orientation).to.equal(null)
@@ -133,7 +142,23 @@ function itShouldTransform(path_or_buffer, label) {
         throw new Error('EXIF do not match')
       }
       if (typeof path_or_buffer === 'string') {
-        fs.writeFileSync(path_or_buffer.replace('samples/', 'samples/transformed/'), buffer)
+        const target_buffer = fs.readFileSync(path_or_buffer.replace('.jpg', '_dest.jpg'))
+        const target_jpeg = jpegjs.decode(target_buffer)
+        const diff_png = new PNG({width: target_jpeg.width, height: target_jpeg.height})
+        const diff_pixels = pixelmatch(
+          jpegjs.decode(buffer).data,
+          target_jpeg.data,
+          diff_png.data,
+          target_jpeg.width,
+          target_jpeg.height,
+          {
+            threshold: 0.25,
+          }
+        )
+        const diff_path = path.join(tmp_path, path.parse(path_or_buffer).base.replace('.jpg', '.diff.png'))
+        diff_png.pack().pipe(fs.createWriteStream(diff_path))
+        fs.writeFileSync(path_or_buffer.replace('samples/', '.tmp/'), buffer)
+        expect(diff_pixels).to.equal(0)
       }
       done()
     })

@@ -189,3 +189,5 @@ This project is released under the [MIT License](license.md).
 * [eslint](http://eslint.org)
 * [glob](https://github.com/isaacs/node-glob)
 * [prettier](https://prettier.io/)
+* [fs-extra](https://github.com/jprichardson/node-fs-extra/)
+* [pixelmatch](https://github.com/mapbox/pixelmatch)

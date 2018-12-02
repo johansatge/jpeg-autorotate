@@ -17,7 +17,15 @@
   "bugs": {
     "url": "https://github.com/johansatge/jpeg-autorotate/issues"
   },
-  "keywords": ["jpeg", "rotate", "autorotate", "orientation", "exif", "thumbnail", "cli"],
+  "keywords": [
+    "jpeg",
+    "rotate",
+    "autorotate",
+    "orientation",
+    "exif",
+    "thumbnail",
+    "cli"
+  ],
   "dependencies": {
     "async": "^2.6.1",
     "colors": "^1.3.0",
@@ -30,7 +38,10 @@
     "chai": "^4.1.2",
     "eslint": "^5.1.0",
     "eslint-plugin-prettier": "^2.6.2",
+    "fs-extra": "^7.0.1",
     "mocha": "^5.2.0",
+    "pixelmatch": "^4.0.2",
+    "pngjs": "^3.3.3",
     "prettier": "^1.13.7"
   },
   "engines": {
