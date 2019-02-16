@@ -1,151 +1,151 @@
-'use strict'
-
+const CustomError = require('./customerror.js')
+const rotateBuffer = require('./transform.js').rotateBuffer
 const fs = require('fs')
-const async = require('async')
 const piexif = require('piexifjs')
-const CustomError = require('./error.js')
-const transform = require('./transform.js')
+const promisify = require('util').promisify
 
 const m = {}
 
-m.errors = {}
-m.errors.read_file = 'read_file'
-m.errors.read_exif = 'read_exif'
-m.errors.no_orientation = 'no_orientation'
-m.errors.unknown_orientation = 'unknown_orientation'
-m.errors.correct_orientation = 'correct_orientation'
-m.errors.rotate_file = 'rotate_file'
+m.errors = {
+  read_file: 'read_file',
+  read_exif: 'read_exif',
+  no_orientation: 'no_orientation',
+  unknown_orientation: 'unknown_orientation',
+  correct_orientation: 'correct_orientation',
+  rotate_file: 'rotate_file',
+}
 
-m.rotate = function(path_or_buffer, options, module_callback) {
-  let quality = typeof options === 'object' && typeof options.quality !== 'undefined' ? parseInt(options.quality) : 100
-  quality = !isNaN(quality) && quality >= 0 && quality <= 100 ? quality : 100
-  module_callback = typeof module_callback === 'function' ? module_callback : function() {}
-
-  let jpeg_buffer = null
-  let jpeg_exif_data = null
-  let jpeg_orientation = null
-
-  if (typeof path_or_buffer === 'string') {
-    fs.readFile(path_or_buffer, _onReadFile)
-  } else if (typeof path_or_buffer === 'object' && Buffer.isBuffer(path_or_buffer)) {
-    _onReadFile(null, path_or_buffer)
-  } else {
-    _onReadFile(new Error('Not a file path or buffer'), null)
+/**
+ * Read the input, rotate the image, return the result (updated buffer, dimensions, etc)
+ */
+m.rotate = function(pathOrBuffer, options, callback) {
+  const hasCallback = typeof callback === 'function'
+  const quality = parseQuality(options.quality)
+  const promise = readBuffer(pathOrBuffer)
+    .then(readExifFromBuffer)
+    .then(({buffer, exifData}) => {
+      const orientation = parseOrientationTag({buffer, exifData})
+      return Promise.all([
+        rotateImage(buffer, orientation, quality),
+        rotateThumbnail(buffer, exifData, orientation, quality),
+      ]).then(([image, thumbnail]) => {
+        return computeFinalBuffer(image, thumbnail, exifData, orientation)
+      })
+    })
+    .then(({updatedBuffer, orientation, updatedDimensions}) => {
+      if (!hasCallback) {
+        return {buffer: updatedBuffer, orientation, dimensions: updatedDimensions, quality}
+      }
+      callback(null, updatedBuffer, orientation, updatedDimensions, quality)
+    })
+    .catch((customError) => {
+      const buffer = customError.buffer
+      delete customError.buffer
+      if (!hasCallback) {
+        throw customError
+      }
+      callback(customError, buffer, null, null, null)
+    })
+  if (!hasCallback) {
+    return promise
   }
+}
 
-  /**
-   * Tries to read EXIF data when the image has been loaded
-   * @param error
-   * @param buffer
-   */
-  function _onReadFile(error, buffer) {
-    if (error) {
-      module_callback(
-        new CustomError(m.errors.read_file, 'Could not read file (' + error.message + ')'),
-        null,
-        null,
-        null
-      )
-      return
-    }
-    try {
-      jpeg_buffer = buffer
-      jpeg_exif_data = piexif.load(jpeg_buffer.toString('binary'))
-    } catch (error) {
-      module_callback(
-        new CustomError(m.errors.read_exif, 'Could not read EXIF data (' + error.message + ')'),
-        null,
-        null,
-        null
-      )
-      return
-    }
-    if (
-      typeof jpeg_exif_data['0th'] === 'undefined' ||
-      typeof jpeg_exif_data['0th'][piexif.ImageIFD.Orientation] === 'undefined'
-    ) {
-      module_callback(new CustomError(m.errors.no_orientation, 'No orientation tag found in EXIF'), buffer, null, null)
-      return
-    }
-    jpeg_orientation = parseInt(jpeg_exif_data['0th'][piexif.ImageIFD.Orientation])
-    if (isNaN(jpeg_orientation) || jpeg_orientation < 1 || jpeg_orientation > 8) {
-      module_callback(
-        new CustomError(m.errors.unknown_orientation, 'Unknown orientation (' + jpeg_orientation + ')'),
-        buffer,
-        null,
-        null
-      )
-      return
-    }
-    if (jpeg_orientation === 1) {
-      module_callback(new CustomError(m.errors.correct_orientation, 'Orientation already correct'), buffer, null, null)
-      return
-    }
-    async.parallel({image: _rotateImage, thumbnail: _rotateThumbnail}, _onRotatedImages)
+/**
+ * Parse the target JPEG quality
+ * (Got from the CLI or the public API)
+ */
+function parseQuality(rawQuality) {
+  const defaultQuality = 100
+  if (typeof rawQuality !== 'number') {
+    return defaultQuality
   }
+  const quality = parseInt(rawQuality)
+  return quality > 0 && quality <= 100 ? quality : defaultQuality
+}
 
-  /**
-   * Tries to rotate the main image
-   * @param callback
-   */
-  function _rotateImage(callback) {
-    transform.do(jpeg_buffer, jpeg_orientation, quality, function(error, buffer, width, height) {
-      callback(error, {buffer: !error ? buffer : null, width: width, height: height})
+/**
+ * Transform the given input to a buffer
+ * (May be a string or a buffer)
+ */
+function readBuffer(pathOrBuffer) {
+  if (typeof pathOrBuffer === 'string') {
+    return promisify(fs.readFile)(pathOrBuffer).catch((error) => {
+      throw new CustomError(m.errors.read_file, 'Could not read file (' + error.message + ')')
     })
   }
-
-  /**
-   * Tries to rotate the thumbnail, if it exists
-   * @param callback
-   */
-  function _rotateThumbnail(callback) {
-    if (typeof jpeg_exif_data['thumbnail'] === 'undefined' || jpeg_exif_data['thumbnail'] === null) {
-      callback(null, {buffer: null, width: 0, height: 0})
-      return
-    }
-    transform.do(Buffer.from(jpeg_exif_data['thumbnail'], 'binary'), jpeg_orientation, quality, function(
-      error,
-      buffer,
-      width,
-      height
-    ) {
-      callback(null, {buffer: !error ? buffer : null, width: width, height: height})
-    })
+  if (typeof pathOrBuffer === 'object' && Buffer.isBuffer(pathOrBuffer)) {
+    return Promise.resolve(pathOrBuffer)
   }
+  return Promise.reject(new CustomError(m.errors.read_file, 'Not a file path or buffer'))
+}
 
-  /**
-   * Merges EXIF data in the rotated buffer and returns
-   * @param error
-   * @param buffers
-   */
-  function _onRotatedImages(error, images) {
-    if (error) {
-      module_callback(
-        new CustomError(m.errors.rotate_file, 'Could not rotate image (' + error.message + ')'),
-        null,
-        null,
-        null
-      )
-      return
-    }
-    jpeg_exif_data['0th'][piexif.ImageIFD.Orientation] = 1
-    if (typeof jpeg_exif_data['Exif'][piexif.ExifIFD.PixelXDimension] !== 'undefined') {
-      jpeg_exif_data['Exif'][piexif.ExifIFD.PixelXDimension] = images.image.width
-    }
-    if (typeof jpeg_exif_data['Exif'][piexif.ExifIFD.PixelYDimension] !== 'undefined') {
-      jpeg_exif_data['Exif'][piexif.ExifIFD.PixelYDimension] = images.image.height
-    }
-    if (images.thumbnail.buffer !== null) {
-      jpeg_exif_data['thumbnail'] = images.thumbnail.buffer.toString('binary')
-    }
-    const exif_bytes = piexif.dump(jpeg_exif_data)
-    const updated_jpeg_buffer = Buffer.from(piexif.insert(exif_bytes, images.image.buffer.toString('binary')), 'binary')
-    const updated_jpeg_dimensions = {
-      height: images.image.height,
-      width: images.image.width,
-    }
-    module_callback(null, updated_jpeg_buffer, jpeg_orientation, updated_jpeg_dimensions)
+function readExifFromBuffer(buffer) {
+  let exifData = null
+  try {
+    exifData = piexif.load(buffer.toString('binary'))
+  } catch (error) {
+    return Promise.reject(new CustomError(m.errors.read_exif, 'Could not read EXIF data (' + error + ')'))
   }
+  return Promise.resolve({buffer, exifData})
+}
+
+/**
+ * Extract the orientation tag from the given EXIF data
+ */
+function parseOrientationTag({buffer, exifData}) {
+  let orientation = null
+  if (exifData['0th'] && exifData['0th'][piexif.ImageIFD.Orientation]) {
+    orientation = parseInt(exifData['0th'][piexif.ImageIFD.Orientation])
+  }
+  if (orientation === null) {
+    throw new CustomError(m.errors.no_orientation, 'No orientation tag found in EXIF', buffer)
+  }
+  if (isNaN(orientation) || orientation < 1 || orientation > 8) {
+    throw new CustomError(m.errors.unknown_orientation, 'Unknown orientation (' + orientation + ')', buffer)
+  }
+  if (orientation === 1) {
+    throw new CustomError(m.errors.correct_orientation, 'Orientation already correct', buffer)
+  }
+  return orientation
+}
+
+function rotateImage(buffer, orientation, quality) {
+  return rotateBuffer(buffer, orientation, quality).catch((error) => {
+    throw new CustomError(m.errors.rotate_file, 'Could not rotate image (' + error.message + ')', buffer)
+  })
+}
+
+function rotateThumbnail(buffer, exifData, orientation, quality) {
+  if (typeof exifData['thumbnail'] === 'undefined' || exifData['thumbnail'] === null) {
+    return Promise.resolve({})
+  }
+  return rotateBuffer(Buffer.from(exifData['thumbnail'], 'binary'), orientation, quality).catch((error) => {
+    throw new CustomError(m.errors.rotate_file, 'Could not rotate thumbnail (' + error.message + ')', buffer)
+  })
+}
+
+/**
+ * Compute the final buffer by updating the original EXIF data and linking it to the rotated buffer
+ */
+function computeFinalBuffer(image, thumbnail, exifData, orientation) {
+  exifData['0th'][piexif.ImageIFD.Orientation] = 1
+  if (typeof exifData['Exif'][piexif.ExifIFD.PixelXDimension] !== 'undefined') {
+    exifData['Exif'][piexif.ExifIFD.PixelXDimension] = image.width
+  }
+  if (typeof exifData['Exif'][piexif.ExifIFD.PixelYDimension] !== 'undefined') {
+    exifData['Exif'][piexif.ExifIFD.PixelYDimension] = image.height
+  }
+  if (thumbnail.buffer) {
+    exifData['thumbnail'] = thumbnail.buffer.toString('binary')
+  }
+  const exifBytes = piexif.dump(exifData)
+  const updatedBuffer = Buffer.from(piexif.insert(exifBytes, image.buffer.toString('binary')), 'binary')
+  const updatedDimensions = {
+    height: image.height,
+    width: image.width,
+  }
+  return Promise.resolve({updatedBuffer, orientation, updatedDimensions})
 }
 
 module.exports = m
