@@ -1,5 +1,3 @@
-'use strict'
-
 const describe = require('mocha').describe
 const expect = require('chai').expect
 const it = require('mocha').it
@@ -9,10 +7,29 @@ const path = require('path')
 require('chai').should()
 
 describe('errors', function() {
-  it('Should return an error if the orientation is 1', function(done) {
+  it('Should expose error types', function() {
+    function getTypeof(thing) {
+      return typeof thing
+    }
+    getTypeof(jo.errors).should.equals('object')
+    getTypeof(jo.errors.read_file).should.equals('string')
+    getTypeof(jo.errors.read_exif).should.equals('string')
+    getTypeof(jo.errors.no_orientation).should.equals('string')
+    getTypeof(jo.errors.unknown_orientation).should.equals('string')
+    getTypeof(jo.errors.correct_orientation).should.equals('string')
+    getTypeof(jo.errors.rotate_file).should.equals('string')
+  })
+  it('Should return an error if the orientation is 1 (callback-based)', function(done) {
     jo.rotate(path.join(__dirname, '/samples/image_1.jpg'), {}, function(error, buffer) {
       error.should.have.property('code').equal(jo.errors.correct_orientation)
       Buffer.isBuffer(buffer).should.be.ok
+      done()
+    })
+  })
+
+  it('Should return an error if the orientation is 1 (Promise-based)', function(done) {
+    jo.rotate(path.join(__dirname, '/samples/image_1.jpg'), {}).catch((error) => {
+      error.should.have.property('code').equal(jo.errors.correct_orientation)
       done()
     })
   })

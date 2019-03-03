@@ -1,5 +1,3 @@
-'use strict'
-
 const before = require('mocha').before
 const describe = require('mocha').describe
 const expect = require('chai').expect
@@ -12,80 +10,96 @@ const piexif = require('piexifjs')
 const pixelmatch = require('pixelmatch')
 const PNG = require('pngjs').PNG
 
-const tmp_path = path.join(__dirname, '.tmp')
+const tmpPath = path.join(__dirname, '.tmp')
 
 require('chai').should()
 
 describe('transformations', function() {
   before(function() {
-    return fs.emptyDir(tmp_path)
+    return fs.emptyDir(tmpPath)
   })
-  itShouldTransform(path.join(__dirname, '/samples/image_2.jpg'), 'image_2.jpg')
-  itShouldTransform(path.join(__dirname, '/samples/image_3.jpg'), 'image_3.jpg')
-  itShouldTransform(path.join(__dirname, '/samples/image_4.jpg'), 'image_4.jpg')
-  itShouldTransform(path.join(__dirname, '/samples/image_5.jpg'), 'image_5.jpg')
-  itShouldTransform(path.join(__dirname, '/samples/image_6.jpg'), 'image_6.jpg')
-  itShouldTransform(path.join(__dirname, '/samples/image_7.jpg'), 'image_7.jpg')
-  itShouldTransform(path.join(__dirname, '/samples/image_8.jpg'), 'image_8.jpg')
-  itShouldTransform(path.join(__dirname, '/samples/image_exif.jpg'), 'image_exif.jpg')
-  itShouldTransform(fs.readFileSync(path.join(__dirname, '/samples/image_8.jpg')), 'From a buffer')
+  const isPromisedBased = [true, false]
+  isPromisedBased.forEach((value) => {
+    itShouldTransform(path.join(__dirname, '/samples/image_2.jpg'), 'image_2.jpg', value)
+    itShouldTransform(path.join(__dirname, '/samples/image_2.jpg'), 'image_2.jpg', value)
+    itShouldTransform(path.join(__dirname, '/samples/image_3.jpg'), 'image_3.jpg', value)
+    itShouldTransform(path.join(__dirname, '/samples/image_4.jpg'), 'image_4.jpg', value)
+    itShouldTransform(path.join(__dirname, '/samples/image_5.jpg'), 'image_5.jpg', value)
+    itShouldTransform(path.join(__dirname, '/samples/image_6.jpg'), 'image_6.jpg', value)
+    itShouldTransform(path.join(__dirname, '/samples/image_7.jpg'), 'image_7.jpg', value)
+    itShouldTransform(path.join(__dirname, '/samples/image_8.jpg'), 'image_8.jpg', value)
+    itShouldTransform(path.join(__dirname, '/samples/image_exif.jpg'), 'image_exif.jpg', value)
+    itShouldTransform(fs.readFileSync(path.join(__dirname, '/samples/image_8.jpg')), 'From a buffer', value)
+  })
 })
 
 /**
  * Try to transform the given path/buffer, and checks data integrity (EXIF, dimensions)
  */
-function itShouldTransform(path_or_buffer, label) {
-  it('Should rotate image (' + label + ')', function(done) {
+function itShouldTransform(pathOrBuffer, label, isPromisedBased) {
+  it('Should rotate image (' + label + ') (' + (isPromisedBased ? 'Promise' : 'Callback') + '-based)', function(done) {
     this.timeout(20000)
-    jo.rotate(path_or_buffer, {}, function(error, buffer, orientation, dimensions) {
-      if (error) {
-        throw error
-      }
-      const orig_buffer = typeof path_or_buffer === 'string' ? fs.readFileSync(path_or_buffer) : path_or_buffer
-      const orig_exif = piexif.load(orig_buffer.toString('binary'))
-      const orig_jpeg = jpegjs.decode(orig_buffer)
-      compareDimensions(orig_jpeg, orientation, dimensions)
-      compareExif(orig_exif, piexif.load(buffer.toString('binary')))
-      if (typeof path_or_buffer === 'string') {
-        comparePixels(path_or_buffer, buffer)
-        fs.writeFileSync(path_or_buffer.replace('samples/', '.tmp/'), buffer)
-      }
-      done()
-    })
+    const options = {quality: 82}
+    if (isPromisedBased) {
+      jo.rotate(pathOrBuffer, options).then(({buffer, orientation, dimensions, quality}) => {
+        checkTransformation(done, pathOrBuffer, null, buffer, orientation, dimensions, quality)
+      })
+    } else {
+      jo.rotate(pathOrBuffer, options, function(error, buffer, orientation, dimensions, quality) {
+        checkTransformation(done, pathOrBuffer, error, buffer, orientation, dimensions, quality)
+      })
+    }
   })
+}
+
+function checkTransformation(done, pathOrBuffer, error, buffer, orientation, dimensions, quality) {
+  if (error) {
+    throw error
+  }
+  const origBuffer = typeof pathOrBuffer === 'string' ? fs.readFileSync(pathOrBuffer) : pathOrBuffer
+  const origExif = piexif.load(origBuffer.toString('binary'))
+  const origJpeg = jpegjs.decode(origBuffer)
+  compareDimensions(origJpeg, orientation, dimensions)
+  compareExif(origExif, piexif.load(buffer.toString('binary')))
+  if (typeof pathOrBuffer === 'string') {
+    comparePixels(pathOrBuffer, buffer)
+    fs.writeFileSync(pathOrBuffer.replace('samples/', '.tmp/'), buffer)
+  }
+  expect(quality).to.equal(82)
+  done()
 }
 
 /**
  * Compare origin and destination pixels with pixelmatch, and save the diff on disk
  */
-function comparePixels(path_or_buffer, buffer) {
-  const target_buffer = fs.readFileSync(path_or_buffer.replace('.jpg', '_dest.jpg'))
-  const target_jpeg = jpegjs.decode(target_buffer)
-  const diff_png = new PNG({width: target_jpeg.width, height: target_jpeg.height})
-  const diff_pixels = pixelmatch(
+function comparePixels(pathOrBuffer, buffer) {
+  const targetBuffer = fs.readFileSync(pathOrBuffer.replace('.jpg', '_dest.jpg'))
+  const targetJpeg = jpegjs.decode(targetBuffer)
+  const diffPng = new PNG({width: targetJpeg.width, height: targetJpeg.height})
+  const diffPixels = pixelmatch(
     jpegjs.decode(buffer).data,
-    target_jpeg.data,
-    diff_png.data,
-    target_jpeg.width,
-    target_jpeg.height,
+    targetJpeg.data,
+    diffPng.data,
+    targetJpeg.width,
+    targetJpeg.height,
     {
       threshold: 0.25,
     }
   )
-  const diff_path = path.join(tmp_path, path.parse(path_or_buffer).base.replace('.jpg', '.diff.png'))
-  diff_png.pack().pipe(fs.createWriteStream(diff_path))
-  expect(diff_pixels).to.equal(0)
+  const diffPath = path.join(tmpPath, path.parse(pathOrBuffer).base.replace('.jpg', '.diff.png'))
+  diffPng.pack().pipe(fs.createWriteStream(diffPath))
+  expect(diffPixels).to.equal(0)
 }
 
 /**
  * Compare origin and destination dimensions
  * Depending on the original orientation, they may be switched
  */
-function compareDimensions(orig_jpeg, orientation, dimensions) {
-  if (orientation < 5 && (orig_jpeg.width !== dimensions.width || orig_jpeg.height !== dimensions.height)) {
+function compareDimensions(origJpeg, orientation, dimensions) {
+  if (orientation < 5 && (origJpeg.width !== dimensions.width || origJpeg.height !== dimensions.height)) {
     throw new Error('Dimensions do not match')
   }
-  if (orientation >= 5 && (orig_jpeg.width !== dimensions.height || orig_jpeg.height !== dimensions.width)) {
+  if (orientation >= 5 && (origJpeg.width !== dimensions.height || origJpeg.height !== dimensions.width)) {
     throw new Error('Dimensions do not match')
   }
 }

@@ -46,6 +46,8 @@ It may be useful, if:
 
 ## Installation
 
+_This module needs Node `>=8`._
+
 Install with [npm](https://www.npmjs.com/):
 
 ```bash
@@ -80,23 +82,39 @@ The tool is available as a Node module. It will load the image, apply the rotati
 const jo = require('jpeg-autorotate')
 const options = {quality: 85}
 const path = '/Users/johan/IMG_1234.jpg' // You can use a Buffer, too
-jo.rotate(path, options, function(error, buffer, orientation, dimensions) {
+
+//
+// With a callback:
+//
+jo.rotate(path, options, (error, buffer, orientation, dimensions, quality) => {
   if (error) {
     console.log('An error occurred when rotating the file: ' + error.message)
     return
   }
-  console.log('Orientation was: ' + orientation)
-  console.log('Height after rotation: ' + dimensions.height)
-  console.log('Width after rotation: ' + dimensions.width)
-  // ...
-  // Do whatever you need with the resulting buffer
-  // ...
+  console.log(`Orientation was ${orientation}`)
+  console.log(`Dimensions after rotation: ${dimensions.width}x${dimensions.height}`)
+  console.log(`Quality: ${quality}`)
+  // ...Do whatever you need with the resulting buffer...
 })
+
+//
+// With a Promise:
+//
+jo.rotate(path, options)
+  .then(({buffer, orientation, dimensions, quality}) => {
+    console.log(`Orientation was ${orientation}`)
+    console.log(`Dimensions after rotation: ${dimensions.width}x${dimensions.height}`)
+    console.log(`Quality: ${quality}`)
+    // ...Do whatever you need with the resulting buffer...
+  })
+  .catch((error) => {
+    console.log('An error occurred when rotating the file: ' + error.message)
+  })
 ```
 
 #### Error handling
 
-The `error` object returned in the callback contains a readable `message`, but also a `code` for better error handling. Available codes are the following:
+The `error` object returned by the module contains a readable `message`, but also a `code` for better error handling. Available codes are the following:
 
 ```javascript
 const jo = require('jpeg-autorotate')
@@ -113,11 +131,12 @@ Sample usage:
 
 ```javascript
 const jo = require('jpeg-autorotate')
-jo.rotate('/image.jpg', function(error, buffer, orientation) {
-  if (error && error.code === jo.errors.correct_orientation) {
-    console.log('The orientation of this image is already correct!')
-  }
-})
+jo.rotate('/image.jpg')
+  .catch((error) => {
+    if (error.code === jo.errors.correct_orientation) {
+      console.log('The orientation of this image is already correct!')
+    }
+  })
 ```
 
 #### Thumbnail too large
@@ -142,34 +161,34 @@ function deleteThumbnailFromExif(imageBuffer) {
 
 The following options are available.
 
-| Option    | Context       | Default value | Description                                                                                               |
-| --------- | ------------- | ------------- | --------------------------------------------------------------------------------------------------------- |
-| `quality` | _CLI, module_ | 100           | Quality of the JPEG - Uncompressed by default, so the resulting image may be bigger than the original one |
-| `jobs`    | _CLI_         | 10            | Max number of concurrent processes, when loading several images                                           |
+| Option | Context | Default value | Description |
+| --- | --- | --- | --- |
+| `quality` | _CLI, module_ | 100 | Quality of the JPEG - Uncompressed by default, so the resulting image may be bigger than the original one |
 
 To use options with the CLI:
 
 ```
-$ jpeg-autorotate /image.jpg --jobs=100 --quality=85
+$ jpeg-autorotate /image.jpg --quality=85
 ```
 
 ## Changelog
 
 This project uses [semver](http://semver.org/).
 
-| Version | Date       | Notes                                                                                                                                |
-| ------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `4.0.1` | 2018-11-29 | Fix rotations `5` and `7` (issue #11)                                                                                                |
+| Version | Date | Notes |
+| --- | --- | --- |
+| `5.0.0` | 2019-03-03 | Drop `--jobs` CLI option<br>Drop support for Node 6 & 7<br>Introduce new `quality` property in the `jo.rotate` callback<br>Public API now supports both callbacks and Promises<br>Update documentation accordingly<br>Update dependencies |
+| `4.0.1` | 2018-11-29 | Fix rotations `5` and `7` (issue #11) |
 | `4.0.0` | 2018-07-15 | Drop support for Node 4 & 5<br>Unpublish lockfile<br>Use prettier for code formatting<br>Update documentation<br>Update dependencies |
-| `3.1.0` | 2017-12-03 | Output dimensions after rotation (@tayler)                                                                                           |
-| `3.0.1` | 2017-07-30 | Node 8 support<br>Update dependencies                                                                                                |
-| `3.0.0` | 2017-02-11 | CLI supports `glob`<br>No more `node 0.12` support<br>Drop semicolons<br>Add eslint rules                                            |
-| `2.0.0` | 2016-06-03 | Supports buffers in entry<br>Returns a buffer even if there was an error<br>Improves tests                                           |
-| `1.1.0` | 2016-04-23 | Adds test suite, removes lwip dependency                                                                                             |
-| `1.0.3` | 2016-03-29 | Displays help when no path given in CLI                                                                                              |
-| `1.0.2` | 2016-03-21 | Adds missing options in CLI help                                                                                                     |
-| `1.0.1` | 2016-03-21 | Fixes NPM publishing fail ^\_^                                                                                                       |
-| `1.0.0` | 2016-03-21 | Initial version                                                                                                                      |
+| `3.1.0` | 2017-12-03 | Output dimensions after rotation (@tayler) |
+| `3.0.1` | 2017-07-30 | Node 8 support<br>Update dependencies |
+| `3.0.0` | 2017-02-11 | CLI supports `glob`<br>No more `node 0.12` support<br>Drop semicolons<br>Add eslint rules |
+| `2.0.0` | 2016-06-03 | Supports buffers in entry<br>Returns a buffer even if there was an error<br>Improves tests |
+| `1.1.0` | 2016-04-23 | Adds test suite, removes lwip dependency |
+| `1.0.3` | 2016-03-29 | Displays help when no path given in CLI |
+| `1.0.2` | 2016-03-21 | Adds missing options in CLI help |
+| `1.0.1` | 2016-03-21 | Fixes NPM publishing fail ^\_^ |
+| `1.0.0` | 2016-03-21 | Initial version |
 
 ## License
 
@@ -180,7 +199,6 @@ This project is released under the [MIT License](license.md).
 * [piexifjs](https://github.com/hMatoba/piexifjs)
 * [jpeg-js](https://github.com/eugeneware/jpeg-js)
 * [exif-orientation-examples](https://github.com/recurser/exif-orientation-examples)
-* [async](https://github.com/caolan/async)
 * [colors](https://github.com/Marak/colors.js)
 * [yargs](https://github.com/bcoe/yargs)
 * [FontAwesome](http://fontawesome.io/)
