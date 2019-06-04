@@ -36,34 +36,34 @@ describe('transformations', function() {
 /**
  * Try to transform the given path/buffer, and checks data integrity (EXIF, dimensions)
  */
-function itShouldTransform(pathOrBuffer, label, isPromisedBased) {
+function itShouldTransform(originPathOrBuffer, label, isPromisedBased) {
   it('Should rotate image (' + label + ') (' + (isPromisedBased ? 'Promise' : 'Callback') + '-based)', function(done) {
     this.timeout(20000)
     const options = {quality: 82}
     if (isPromisedBased) {
-      jo.rotate(pathOrBuffer, options).then(({buffer, orientation, dimensions, quality}) => {
-        checkTransformation(done, pathOrBuffer, null, buffer, orientation, dimensions, quality)
+      jo.rotate(originPathOrBuffer, options).then(({buffer, orientation, dimensions, quality}) => {
+        checkTransformation(done, originPathOrBuffer, null, buffer, orientation, dimensions, quality)
       })
     } else {
-      jo.rotate(pathOrBuffer, options, function(error, buffer, orientation, dimensions, quality) {
-        checkTransformation(done, pathOrBuffer, error, buffer, orientation, dimensions, quality)
+      jo.rotate(originPathOrBuffer, options, function(error, buffer, orientation, dimensions, quality) {
+        checkTransformation(done, originPathOrBuffer, error, buffer, orientation, dimensions, quality)
       })
     }
   })
 }
 
-function checkTransformation(done, pathOrBuffer, error, buffer, orientation, dimensions, quality) {
+function checkTransformation(done, originPathOrBuffer, error, transformedBuffer, orientation, dimensions, quality) {
   if (error) {
     throw error
   }
-  const origBuffer = typeof pathOrBuffer === 'string' ? fs.readFileSync(pathOrBuffer) : pathOrBuffer
+  const origBuffer = typeof originPathOrBuffer === 'string' ? fs.readFileSync(originPathOrBuffer) : originPathOrBuffer
   const origExif = piexif.load(origBuffer.toString('binary'))
   const origJpeg = jpegjs.decode(origBuffer)
   compareDimensions(origJpeg, orientation, dimensions)
-  compareExif(origExif, piexif.load(buffer.toString('binary')))
-  if (typeof pathOrBuffer === 'string') {
-    comparePixels(pathOrBuffer, buffer)
-    fs.writeFileSync(pathOrBuffer.replace('samples/', '.tmp/'), buffer)
+  compareExif(origExif, piexif.load(transformedBuffer.toString('binary')))
+  if (typeof originPathOrBuffer === 'string') {
+    comparePixels(originPathOrBuffer, transformedBuffer)
+    fs.writeFileSync(originPathOrBuffer.replace('samples/', '.tmp/'), transformedBuffer)
   }
   expect(quality).to.equal(82)
   done()
@@ -72,12 +72,12 @@ function checkTransformation(done, pathOrBuffer, error, buffer, orientation, dim
 /**
  * Compare origin and destination pixels with pixelmatch, and save the diff on disk
  */
-function comparePixels(pathOrBuffer, buffer) {
-  const targetBuffer = fs.readFileSync(pathOrBuffer.replace('.jpg', '_dest.jpg'))
+function comparePixels(originPathOrBuffer, transformedBuffer) {
+  const targetBuffer = fs.readFileSync(originPathOrBuffer.replace('.jpg', '_dest.jpg'))
   const targetJpeg = jpegjs.decode(targetBuffer)
   const diffPng = new PNG({width: targetJpeg.width, height: targetJpeg.height})
   const diffPixels = pixelmatch(
-    jpegjs.decode(buffer).data,
+    jpegjs.decode(transformedBuffer).data,
     targetJpeg.data,
     diffPng.data,
     targetJpeg.width,
@@ -86,7 +86,7 @@ function comparePixels(pathOrBuffer, buffer) {
       threshold: 0.25,
     }
   )
-  const diffPath = path.join(tmpPath, path.parse(pathOrBuffer).base.replace('.jpg', '.diff.png'))
+  const diffPath = path.join(tmpPath, path.parse(originPathOrBuffer).base.replace('.jpg', '.diff.png'))
   diffPng.pack().pipe(fs.createWriteStream(diffPath))
   expect(diffPixels).to.equal(0)
 }
