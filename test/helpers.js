@@ -1,5 +1,4 @@
 const exec = require('child_process').exec
-const expect = require('chai').expect
 const fs = require('fs-extra')
 const jpegjs = require('jpeg-js')
 const path = require('path')
@@ -12,18 +11,22 @@ module.exports = {
   transformWithCli,
 }
 
-function checkTransformation(done, originPathOrBuffer, transformedBuffer, orientation, dimensions, quality) {
+/**
+ * Compare the transformed buffer with the original one,
+ * and return the result to the spec file to be tested
+ */
+function checkTransformation(originPathOrBuffer, transformedBuffer, orientation, dimensions) {
   const origBuffer = typeof originPathOrBuffer === 'string' ? fs.readFileSync(originPathOrBuffer) : originPathOrBuffer
   const origExif = piexif.load(origBuffer.toString('binary'))
   const origJpeg = jpegjs.decode(origBuffer)
-  compareDimensions(origJpeg, orientation, dimensions)
-  compareExif(origExif, piexif.load(transformedBuffer.toString('binary')))
   if (typeof originPathOrBuffer === 'string') {
-    comparePixels(originPathOrBuffer, transformedBuffer)
     fs.writeFileSync(originPathOrBuffer.replace('samples/', '.tmp/'), transformedBuffer)
   }
-  expect(quality).to.equal(82)
-  done()
+  return {
+    dimensionsMatch: compareDimensions(origJpeg, orientation, dimensions),
+    exifMatch: compareExif(origExif, piexif.load(transformedBuffer.toString('binary'))),
+    pixelsMatch: typeof originPathOrBuffer === 'string' ? comparePixels(originPathOrBuffer, transformedBuffer) : true,
+  }
 }
 
 /**
@@ -48,7 +51,7 @@ function comparePixels(originPathOrBuffer, transformedBuffer) {
     path.parse(originPathOrBuffer).base.replace('.jpg', '.diff.png')
   )
   diffPng.pack().pipe(fs.createWriteStream(diffPath))
-  expect(diffPixels).to.equal(0)
+  return diffPixels === 0
 }
 
 /**
@@ -57,11 +60,12 @@ function comparePixels(originPathOrBuffer, transformedBuffer) {
  */
 function compareDimensions(origJpeg, orientation, dimensions) {
   if (orientation < 5 && (origJpeg.width !== dimensions.width || origJpeg.height !== dimensions.height)) {
-    throw new Error('Dimensions do not match')
+    return false
   }
   if (orientation >= 5 && (origJpeg.width !== dimensions.height || origJpeg.height !== dimensions.width)) {
-    throw new Error('Dimensions do not match')
+    return false
   }
+  return true
 }
 
 /**
@@ -83,16 +87,17 @@ function compareExif(orig, dest) {
   dest['1st'][piexif.ImageIFD.JPEGInterchangeFormat] = 0
   orig['1st'][piexif.ImageIFD.JPEGInterchangeFormatLength] = 0 // Number of bytes of the thumbnail
   dest['1st'][piexif.ImageIFD.JPEGInterchangeFormatLength] = 0
-
-  if (JSON.stringify(orig) !== JSON.stringify(dest)) {
-    throw new Error('EXIF do not match')
-  }
+  return JSON.stringify(orig) === JSON.stringify(dest)
 }
 
-function transformWithCli(originPathOrBuffer, quality) {
+/**
+ * Transform the given path using the CLI module,
+ * and return the transformation data by parsing stdout
+ */
+function transformWithCli(originPath, quality) {
   return new Promise((resolve, reject) => {
-    const destPath = originPathOrBuffer.replace('.jpg', '_cli.jpg')
-    const command = ['cp ' + originPathOrBuffer + ' ' + destPath, './src/cli.js ' + destPath + ' --quality=' + quality]
+    const destPath = originPath.replace('.jpg', '_cli.jpg')
+    const command = ['cp ' + originPath + ' ' + destPath, './src/cli.js ' + destPath + ' --quality=' + quality]
     exec(command.join(' && '), function(error, stdout) {
       if (error) {
         return reject(error)
