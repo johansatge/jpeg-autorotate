@@ -51,20 +51,25 @@ function processFiles(files, index = 0) {
   if (index + 1 > files.length) {
     return Promise.resolve()
   }
-  return processFile(files[index])
-    .then((buffer) => {
-      return buffer ? promisify(fs.writeFile)(files[index], buffer) : Promise.resolve()
-    })
-    .then(() => {
-      return processFiles(files, index + 1)
-    })
-}
-
-function processFile(filePath) {
+  const filePath = files[index]
   return jo
     .rotate(filePath, {quality: argv.quality})
-    .then(({orientation, quality}) => {
-      const message = 'Processed (Orientation was ' + orientation + ') (Quality ' + quality + '%)'
+    .then(({buffer, orientation, quality, dimensions}) => {
+      return promisify(fs.writeFile)(files[index], buffer).then(() => {
+        return {orientation, quality, dimensions}
+      })
+    })
+    .then(({orientation, quality, dimensions}) => {
+      const message =
+        'Processed (Orientation: ' +
+        orientation +
+        ') (Quality: ' +
+        quality +
+        '%) (Dimensions: ' +
+        dimensions.width +
+        'x' +
+        dimensions.height +
+        ')'
       console.log(filePath + ': ' + colors.green(message))
     })
     .catch((error) => {

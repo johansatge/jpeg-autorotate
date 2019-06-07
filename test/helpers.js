@@ -1,61 +1,18 @@
-const before = require('mocha').before
-const describe = require('mocha').describe
+const exec = require('child_process').exec
 const expect = require('chai').expect
 const fs = require('fs-extra')
-const it = require('mocha').it
-const jo = require('../src/main.js')
 const jpegjs = require('jpeg-js')
 const path = require('path')
 const piexif = require('piexifjs')
 const pixelmatch = require('pixelmatch')
 const PNG = require('pngjs').PNG
 
-const tmpPath = path.join(__dirname, '.tmp')
-
-require('chai').should()
-
-describe('transformations', function() {
-  before(function() {
-    return fs.emptyDir(tmpPath)
-  })
-  const isPromisedBased = [true, false]
-  isPromisedBased.forEach((value) => {
-    itShouldTransform(path.join(__dirname, '/samples/image_2.jpg'), 'image_2.jpg', value)
-    itShouldTransform(path.join(__dirname, '/samples/image_2.jpg'), 'image_2.jpg', value)
-    itShouldTransform(path.join(__dirname, '/samples/image_3.jpg'), 'image_3.jpg', value)
-    itShouldTransform(path.join(__dirname, '/samples/image_4.jpg'), 'image_4.jpg', value)
-    itShouldTransform(path.join(__dirname, '/samples/image_5.jpg'), 'image_5.jpg', value)
-    itShouldTransform(path.join(__dirname, '/samples/image_6.jpg'), 'image_6.jpg', value)
-    itShouldTransform(path.join(__dirname, '/samples/image_7.jpg'), 'image_7.jpg', value)
-    itShouldTransform(path.join(__dirname, '/samples/image_8.jpg'), 'image_8.jpg', value)
-    itShouldTransform(path.join(__dirname, '/samples/image_exif.jpg'), 'image_exif.jpg', value)
-    itShouldTransform(fs.readFileSync(path.join(__dirname, '/samples/image_8.jpg')), 'From a buffer', value)
-  })
-})
-
-/**
- * Try to transform the given path/buffer, and checks data integrity (EXIF, dimensions)
- */
-function itShouldTransform(originPathOrBuffer, label, isPromisedBased) {
-  it('Should rotate image (' + label + ') (' + (isPromisedBased ? 'Promise' : 'Callback') + '-based)', function(done) {
-    this.timeout(20000)
-    const options = {quality: 82}
-    if (isPromisedBased) {
-      jo.rotate(originPathOrBuffer, options).then(({buffer, orientation, dimensions, quality}) => {
-        checkTransformation(done, originPathOrBuffer, null, buffer, orientation, dimensions, quality)
-      })
-    } else {
-      jo.rotate(originPathOrBuffer, options, function(error, buffer, orientation, dimensions, quality) {
-        checkTransformation(done, originPathOrBuffer, error, buffer, orientation, dimensions, quality)
-      })
-    }
-  })
+module.exports = {
+  checkTransformation,
+  transformWithCli,
 }
 
-function checkTransformation(done, originPathOrBuffer, error, transformedBuffer, orientation, dimensions, quality) {
-  if (error) {
-    throw error
-  }
+function checkTransformation(done, originPathOrBuffer, transformedBuffer, orientation, dimensions, quality) {
   const origBuffer = typeof originPathOrBuffer === 'string' ? fs.readFileSync(originPathOrBuffer) : originPathOrBuffer
   const origExif = piexif.load(origBuffer.toString('binary'))
   const origJpeg = jpegjs.decode(origBuffer)
@@ -86,7 +43,10 @@ function comparePixels(originPathOrBuffer, transformedBuffer) {
       threshold: 0.25,
     }
   )
-  const diffPath = path.join(tmpPath, path.parse(originPathOrBuffer).base.replace('.jpg', '.diff.png'))
+  const diffPath = path.join(
+    path.join(__dirname, '.tmp'),
+    path.parse(originPathOrBuffer).base.replace('.jpg', '.diff.png')
+  )
   diffPng.pack().pipe(fs.createWriteStream(diffPath))
   expect(diffPixels).to.equal(0)
 }
@@ -127,4 +87,31 @@ function compareExif(orig, dest) {
   if (JSON.stringify(orig) !== JSON.stringify(dest)) {
     throw new Error('EXIF do not match')
   }
+}
+
+function transformWithCli(originPathOrBuffer, quality) {
+  return new Promise((resolve, reject) => {
+    const destPath = originPathOrBuffer.replace('.jpg', '_cli.jpg')
+    const command = ['cp ' + originPathOrBuffer + ' ' + destPath, './src/cli.js ' + destPath + ' --quality=' + quality]
+    exec(command.join(' && '), function(error, stdout) {
+      if (error) {
+        return reject(error)
+      }
+      const output = stdout.match(
+        /Processed \(Orientation: ([0-9]{1})\) \(Quality: ([0-9]+)%\) \(Dimensions: ([0-9]+)x([0-9]+)\)/
+      )
+      fs.readFile(destPath)
+        .then((buffer) => {
+          return fs.remove(destPath).then(() => {
+            resolve({
+              buffer,
+              orientation: parseInt(output[1]),
+              quality: parseInt(output[2]),
+              dimensions: {width: parseInt(output[3]), height: parseInt(output[4])},
+            })
+          })
+        })
+        .catch(reject)
+    })
+  })
 }

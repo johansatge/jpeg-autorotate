@@ -8,7 +8,7 @@
   },
   "scripts": {
     "checkstyle": "eslint .",
-    "test": "mocha test/*.js"
+    "test": "mocha test/*.spec.js"
   },
   "main": "src/main.js",
   "repository": {
