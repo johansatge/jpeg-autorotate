@@ -177,6 +177,7 @@ This project uses [semver](http://semver.org/).
 
 | Version | Date | Notes |
 | --- | --- | --- |
+| `5.0.1` | 2019-06-08 | Fix CLI support |
 | `5.0.0` | 2019-03-03 | Drop `--jobs` CLI option<br>Drop support for Node 6 & 7<br>Introduce new `quality` property in the `jo.rotate` callback<br>Public API now supports both callbacks and Promises<br>Update documentation accordingly<br>Update dependencies |
 | `4.0.1` | 2018-11-29 | Fix rotations `5` and `7` (issue #11) |
 | `4.0.0` | 2018-07-15 | Drop support for Node 4 & 5<br>Unpublish lockfile<br>Use prettier for code formatting<br>Update documentation<br>Update dependencies |
