@@ -211,3 +211,4 @@ This project is released under the [MIT License](license.md).
 * [prettier](https://prettier.io/)
 * [fs-extra](https://github.com/jprichardson/node-fs-extra/)
 * [pixelmatch](https://github.com/mapbox/pixelmatch)
+* [pngjs](https://github.com/lukeapage/pngjs)
