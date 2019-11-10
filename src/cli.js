@@ -76,7 +76,8 @@ function processFiles(files) {
       .catch((error) => {
         const isFatal = error.code !== jo.errors.correct_orientation
         console.log(filePath + ': ' + (isFatal ? colors.red(error.message) : colors.yellow(error.message)))
-      }))
+      })
+    )
   })
   return Promise.all(promiseArray).then(() => console.log('done processing files'))
 }
