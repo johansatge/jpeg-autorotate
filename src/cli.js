@@ -76,4 +76,5 @@ function processFiles(files, index = 0) {
       const isFatal = error.code !== jo.errors.correct_orientation
       console.log(filePath + ': ' + (isFatal ? colors.red(error.message) : colors.yellow(error.message)))
     })
+    .then(() => processFiles(files, index + 1))
 }
