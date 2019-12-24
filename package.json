@@ -1,6 +1,6 @@
 {
   "name": "jpeg-autorotate",
-  "version": "5.0.2",
+  "version": "5.0.3",
   "description": "Rotates JPEG images based on EXIF orientation",
   "author": "Johan Satgé",
   "bin": {

@@ -177,12 +177,13 @@ This project uses [semver](http://semver.org/).
 
 | Version | Date | Notes |
 | --- | --- | --- |
+| `5.0.3` | 2019-12-24 | Fix multiple file support in CLI<br>Dependencies update |
 | `5.0.2` | 2019-09-28 | Dependencies update |
 | `5.0.1` | 2019-06-08 | Fix CLI support |
 | `5.0.0` | 2019-03-03 | Drop `--jobs` CLI option<br>Drop support for Node 6 & 7<br>Introduce new `quality` property in the `jo.rotate` callback<br>Public API now supports both callbacks and Promises<br>Update documentation accordingly<br>Update dependencies |
 | `4.0.1` | 2018-11-29 | Fix rotations `5` and `7` (issue #11) |
 | `4.0.0` | 2018-07-15 | Drop support for Node 4 & 5<br>Unpublish lockfile<br>Use prettier for code formatting<br>Update documentation<br>Update dependencies |
-| `3.1.0` | 2017-12-03 | Output dimensions after rotation (@tayler) |
+| `3.1.0` | 2017-12-03 | Output dimensions after rotation |
 | `3.0.1` | 2017-07-30 | Node 8 support<br>Update dependencies |
 | `3.0.0` | 2017-02-11 | CLI supports `glob`<br>No more `node 0.12` support<br>Drop semicolons<br>Add eslint rules |
 | `2.0.0` | 2016-06-03 | Supports buffers in entry<br>Returns a buffer even if there was an error<br>Improves tests |
