@@ -9,8 +9,8 @@ const path = require('path')
 
 require('chai').should()
 
-describe('transformations', function() {
-  before(function() {
+describe('transformations', function () {
+  before(function () {
     return fs.emptyDir(path.join(__dirname, '.tmp'))
   })
   const modes = ['promise', 'callback', 'cli']
@@ -30,7 +30,7 @@ describe('transformations', function() {
 })
 
 function itShouldTransform(originPathOrBuffer, label, mode) {
-  it('Should rotate image (' + label + ') (' + mode + ')', function(done) {
+  it('Should rotate image (' + label + ') (' + mode + ')', function (done) {
     this.timeout(20000)
     const options = {quality: 82}
     if (mode === 'promise') {
@@ -53,7 +53,7 @@ function testPromise(originPathOrBuffer, options, done) {
 }
 
 function testCallback(originPathOrBuffer, options, done) {
-  jo.rotate(originPathOrBuffer, options, function(error, buffer, orientation, dimensions, quality) {
+  jo.rotate(originPathOrBuffer, options, function (error, buffer, orientation, dimensions, quality) {
     testTransformation(originPathOrBuffer, buffer, error, orientation, dimensions, quality)
     done()
   })

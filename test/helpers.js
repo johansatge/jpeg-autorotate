@@ -98,7 +98,7 @@ function transformWithCli(originPath, quality) {
   return new Promise((resolve, reject) => {
     const destPath = originPath.replace('.jpg', '_cli.jpg')
     const command = ['cp ' + originPath + ' ' + destPath, './src/cli.js ' + destPath + ' --quality=' + quality]
-    exec(command.join(' && '), function(error, stdout) {
+    exec(command.join(' && '), function (error, stdout) {
       if (error) {
         return reject(error)
       }
