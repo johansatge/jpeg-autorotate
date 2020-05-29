@@ -6,7 +6,7 @@ const m = {}
  * Decode the given buffer and applies the right transformation
  * Depending on the orientation, it may be a rotation and / or an horizontal flip
  */
-m.rotateBuffer = function(buffer, orientation, quality) {
+m.rotateBuffer = function (buffer, orientation, quality) {
   let jpeg = null
   try {
     jpeg = jpegjs.decode(buffer)

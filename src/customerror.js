@@ -1,4 +1,4 @@
-const m = function(code, message, buffer = null) {
+const m = function (code, message, buffer = null) {
   this.code = code
   this.message = message
   this.buffer = buffer

@@ -18,7 +18,7 @@ m.errors = {
 /**
  * Read the input, rotate the image, return the result (updated buffer, dimensions, etc)
  */
-m.rotate = function(pathOrBuffer, options, callback) {
+m.rotate = function (pathOrBuffer, options, callback) {
   const hasCallback = typeof callback === 'function'
   const quality = parseQuality(options.quality)
   const promise = readBuffer(pathOrBuffer)
