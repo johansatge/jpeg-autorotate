@@ -10,6 +10,12 @@
     "checkstyle": "eslint .",
     "test": "mocha test/*.spec.js"
   },
+  "files": [
+    "src/**/*.js",
+    "package.json",
+    "readme.md",
+    "license.md"
+  ],
   "main": "src/main.js",
   "repository": {
     "type": "git",
