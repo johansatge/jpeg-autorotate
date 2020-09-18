@@ -177,6 +177,7 @@ This project uses [semver](http://semver.org/).
 
 | Version | Date | Notes |
 | --- | --- | --- |
+| `7.0.0` | 2020-09-19 | Don't publish test and linting files on NPM |
 | `6.0.0` | 2020-05-30 | Dependencies update<br>Drop support for Node < 10<br>From `jpeg-js` update: _images larger than 100 megapixels or requiring more than 512MB of memory to decode will throw_ |
 | `5.0.3` | 2019-12-24 | Fix multiple file support in CLI<br>Dependencies update |
 | `5.0.2` | 2019-09-28 | Dependencies update |
