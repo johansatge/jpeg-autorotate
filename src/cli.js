@@ -43,10 +43,6 @@ listFiles()
   .then(() => {
     process.exit(0)
   })
-  .catch((error) => {
-    console.log(error.message)
-    process.exit(1)
-  })
 
 function listFiles() {
   return Promise.all(argv._.map((arg) => promisify(glob)(arg, {}))).then((files) => {

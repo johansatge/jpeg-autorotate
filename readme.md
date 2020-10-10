@@ -1,8 +1,9 @@
 ![Version](https://img.shields.io/npm/v/jpeg-autorotate.svg)
-[![Build Status](https://travis-ci.org/johansatge/jpeg-autorotate.svg?branch=master)](https://travis-ci.org/johansatge/jpeg-autorotate)
 ![Downloads](https://img.shields.io/npm/dm/jpeg-autorotate.svg)
-[![Install size](https://badgen.net/packagephobia/install/jpeg-autorotate)](https://packagephobia.com/result?p=jpeg-autorotate)
 ![Last commit](https://badgen.net/github/last-commit/johansatge/jpeg-autorotate)
+[![Build Status](https://travis-ci.org/johansatge/jpeg-autorotate.svg?branch=master)](https://travis-ci.org/johansatge/jpeg-autorotate)
+![Coverage](https://badgen.net/codecov/c/github/johansatge/jpeg-autorotate)
+[![Install size](https://badgen.net/packagephobia/install/jpeg-autorotate)](https://packagephobia.com/result?p=jpeg-autorotate)
 
 ![Icon](icon.png)
 

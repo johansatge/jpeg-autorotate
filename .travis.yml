@@ -5,4 +5,7 @@ node_js:
   - '10'
 script:
   - npm run checkstyle
-  - npm test
+  - npm run test-ci
+branches:
+  only: 
+    - master

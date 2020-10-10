@@ -8,7 +8,8 @@
   },
   "scripts": {
     "checkstyle": "eslint .",
-    "test": "mocha test/*.spec.js"
+    "test": "nyc --reporter=text mocha test/*.spec.js && rm -r .nyc_output",
+    "test-ci": "nyc --reporter=lcov mocha test/*.spec.js && codecov"
   },
   "files": [
     "src/**/*.js",
@@ -42,9 +43,11 @@
   },
   "devDependencies": {
     "chai": "^4.1.2",
+    "codecov": "^3.8.0",
     "eslint": "^7.9.0",
     "eslint-plugin-prettier": "^3.1.4",
     "mocha": "^8.1.3",
+    "nyc": "^15.1.0",
     "prettier": "^2.1.2"
   },
   "engines": {

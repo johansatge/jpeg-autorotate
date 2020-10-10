@@ -18,17 +18,29 @@ m.errors = {
 /**
  * Read the input, rotate the image, return the result (updated buffer, dimensions, etc)
  */
-m.rotate = function (pathOrBuffer, options, callback) {
+m.rotate = function (pathOrBuffer, opts, callback) {
   const hasCallback = typeof callback === 'function'
   const quality =
-    typeof options.quality === 'number' && options.quality > 0 && options.quality <= 100 ? options.quality : 100
+    typeof opts === 'object' &&
+    opts !== null &&
+    typeof opts.quality === 'number' &&
+    opts.quality > 0 &&
+    opts.quality <= 100
+      ? opts.quality
+      : 100
   const maxResolutionInMP =
-    typeof options.jpegjsMaxResolutionInMP === 'number' && options.jpegjsMaxResolutionInMP > 0
-      ? options.jpegjsMaxResolutionInMP
+    typeof opts === 'object' &&
+    opts !== null &&
+    typeof opts.jpegjsMaxResolutionInMP === 'number' &&
+    opts.jpegjsMaxResolutionInMP > 0
+      ? opts.jpegjsMaxResolutionInMP
       : null
   const maxMemoryUsageInMB =
-    typeof options.jpegjsMaxMemoryUsageInMB === 'number' && options.jpegjsMaxMemoryUsageInMB > 0
-      ? options.jpegjsMaxMemoryUsageInMB
+    typeof opts === 'object' &&
+    opts !== null &&
+    typeof opts.jpegjsMaxMemoryUsageInMB === 'number' &&
+    opts.jpegjsMaxMemoryUsageInMB > 0
+      ? opts.jpegjsMaxMemoryUsageInMB
       : null
   const promise = readBuffer(pathOrBuffer)
     .then(readExifFromBuffer)

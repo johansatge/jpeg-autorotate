@@ -1,14 +1,12 @@
 const describe = require('mocha').describe
+const it = require('mocha').it
 const expect = require('chai').expect
 const fs = require('fs')
 const fsp = require('fs').promises
-const it = require('mocha').it
 const jo = require('../src/main.js')
 const path = require('path')
 const crypto = require('crypto')
 const execPromise = require('util').promisify(require('child_process').exec)
-
-require('chai').should()
 
 const images = [
   {fileName: 'image_2.jpg', width: 600, height: 450, orientation: 2},
@@ -40,7 +38,7 @@ describe('transformations', function () {
 })
 
 function itShouldTransformWithCallback(originPathOrBuffer, label, refWidth, refHeight, refOrientation, refMd5) {
-  it('Should rotate image (' + label + ') with callback', (done) => {
+  it('Should rotate image (' + label + ') (callback)', (done) => {
     jo.rotate(originPathOrBuffer, {quality: 82}, (error, buffer, orientation, dimensions, quality) => {
       expect(error).to.equal(null)
       expect(quality).to.equal(82)
@@ -54,7 +52,7 @@ function itShouldTransformWithCallback(originPathOrBuffer, label, refWidth, refH
 }
 
 function itShouldTransformWithPromise(originPathOrBuffer, label, refWidth, refHeight, refOrientation, refMd5) {
-  it('Should rotate image (' + label + ') with promise', async () => {
+  it('Should rotate image (' + label + ') (promise)', async () => {
     const {buffer, orientation, dimensions, quality} = await jo.rotate(originPathOrBuffer, {quality: 82})
     expect(quality).to.equal(82)
     expect(dimensions.width).to.equal(refWidth)
@@ -65,7 +63,7 @@ function itShouldTransformWithPromise(originPathOrBuffer, label, refWidth, refHe
 }
 
 function itShouldTransformWithCli(originPath, label, refWidth, refHeight, refOrientation, refMd5) {
-  it('Should rotate image (' + label + ') with CLI', async () => {
+  it('Should rotate image (' + label + ') (cli)', async () => {
     const destPath = originPath.replace('.jpg', '_cli.jpg')
     const command = ['cp ' + originPath + ' ' + destPath, './src/cli.js ' + destPath + ' --quality=82']
     const {stdout} = await execPromise(command.join(' && '))
