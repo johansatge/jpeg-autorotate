@@ -21,7 +21,7 @@ describe('errors', function () {
     getTypeof(jo.errors.rotate_file).should.equals('string')
   })
 
-  it('Should return an error if the orientation is 1 (callback)', function (done) {
+  it('Should return a "correct_orientation" error if the orientation is 1 (callback)', function (done) {
     jo.rotate(path.join(__dirname, '/samples/image_1.jpg'), {}, function (error, buffer) {
       error.should.have.property('code').equal(jo.errors.correct_orientation)
       Buffer.isBuffer(buffer).should.be.ok
@@ -29,21 +29,21 @@ describe('errors', function () {
     })
   })
 
-  it('Should return an error if the orientation is 1 (promise)', function (done) {
+  it('Should return a "correct_orientation" error if the orientation is 1 (promise)', function (done) {
     jo.rotate(path.join(__dirname, '/samples/image_1.jpg'), {}).catch((error) => {
       error.should.have.property('code').equal(jo.errors.correct_orientation)
       done()
     })
   })
 
-  it('Should return an error if the orientation is 1 (cli)', function (done) {
+  it('Should return a "correct_orientation" error if the orientation is 1 (cli)', function (done) {
     exec('./src/cli.js ' + path.join(__dirname, '/samples/image_1.jpg'), (error, stdout) => {
       stdout.should.contain('Orientation already correct')
       done()
     })
   })
 
-  it('Should return an error if the image does not exist', function (done) {
+  it('Should return a "read_file" error if the image does not exist', function (done) {
     jo.rotate('foo.jpg', {}, function (error, buffer, orientation) {
       error.should.have.property('code').equal(jo.errors.read_file)
       expect(buffer).to.equal(null)
@@ -52,7 +52,7 @@ describe('errors', function () {
     })
   })
 
-  it('Should return an error if the file is not an image', function (done) {
+  it('Should return a "read_file" error if the file is not an image', function (done) {
     jo.rotate(path.join(__dirname, '/samples/textfile.md'), {}, function (error, buffer, orientation) {
       error.should.have.property('code').equal(jo.errors.read_exif)
       expect(buffer).to.equal(null)
@@ -61,7 +61,7 @@ describe('errors', function () {
     })
   })
 
-  it('Should return an error if the path is not a string/buffer', function (done) {
+  it('Should return a "read_file" error if the path is not a string/buffer', function (done) {
     jo.rotate(['foo'], {}, function (error, buffer, orientation) {
       error.should.have.property('code').equal(jo.errors.read_file)
       expect(buffer).to.equal(null)
@@ -79,7 +79,7 @@ describe('errors', function () {
     })
   })
 
-  it('Should return an error if the image has no orientation tag', function (done) {
+  it('Should return a "no_orientation" error if the image has no orientation tag', function (done) {
     jo.rotate(path.join(__dirname, '/samples/image_no_orientation.jpg'), {}, function (error, buffer, orientation) {
       error.should.have.property('code').equal(jo.errors.no_orientation)
       Buffer.isBuffer(buffer).should.be.ok
@@ -88,7 +88,7 @@ describe('errors', function () {
     })
   })
 
-  it('Should return an error if the image has an unknown orientation tag', function (done) {
+  it('Should return an "unknown_orientation" error if the image has an unknown orientation tag', function (done) {
     jo.rotate(path.join(__dirname, '/samples/image_unknown_orientation.jpg'), {}, function (
       error,
       buffer,
@@ -97,6 +97,46 @@ describe('errors', function () {
       error.should.have.property('code').equal(jo.errors.unknown_orientation)
       Buffer.isBuffer(buffer).should.be.ok
       expect(orientation).to.equal(null)
+      done()
+    })
+  })
+
+  it('Should return a "rotate_file" error if the memory is exceeded when decoding the source image (callback)', function (done) {
+    const options = {
+      jpegjsMaxMemoryUsageInMB: 0.001,
+    }
+    jo.rotate(path.join(__dirname, '/samples/image_2.jpg'), options, function (error, buffer, orientation) {
+      error.should.have.property('code').equal(jo.errors.rotate_file)
+      Buffer.isBuffer(buffer).should.be.ok
+      expect(orientation).to.equal(null)
+      done()
+    })
+  })
+
+  it('Should return a "rotate_file" error if the memory is exceeded when decoding the source image (cli)', function (done) {
+    const cliOption = ' --jpegjsMaxMemoryUsageInMB=0.001'
+    exec('./src/cli.js ' + path.join(__dirname, '/samples/image_2.jpg') + cliOption, (error, stdout) => {
+      stdout.should.contain('Could not rotate image')
+      done()
+    })
+  })
+
+  it('Should return a "rotate_file" error if the image is too big (callback)', function (done) {
+    const options = {
+      jpegjsMaxResolutionInMP: 0.001,
+    }
+    jo.rotate(path.join(__dirname, '/samples/image_2.jpg'), options, function (error, buffer, orientation) {
+      error.should.have.property('code').equal(jo.errors.rotate_file)
+      Buffer.isBuffer(buffer).should.be.ok
+      expect(orientation).to.equal(null)
+      done()
+    })
+  })
+
+  it('Should return a "rotate_file" error if the image is too big (cli)', function (done) {
+    const cliOption = ' --jpegjsMaxResolutionInMP=0.001'
+    exec('./src/cli.js ' + path.join(__dirname, '/samples/image_2.jpg') + cliOption, (error, stdout) => {
+      stdout.should.contain('Could not rotate image')
       done()
     })
   })

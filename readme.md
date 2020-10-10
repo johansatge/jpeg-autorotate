@@ -13,12 +13,13 @@
 * [What does it do](#what-does-it-do)
 * [Installation](#installation)
 * [Usage](#usage)
+  * [Options](#options)
   * [CLI](#cli)
   * [Node module](#node-module)
     * [Sample usage](#sample-usage)
     * [Error handling](#error-handling)
-    * [Thumbnail too large](#thumbnail-too-large)
-  * [Options](#options)
+* [Troubleshooting](#troubleshooting)
+  * [Thumbnail too large](#thumbnail-too-large)
 * [Changelog](#changelog)
 * [License](#license)
 * [Credits](#credits)
@@ -57,20 +58,43 @@ $ npm install jpeg-autorotate --global
 
 ## Usage
 
+### Options
+
+| Option | Default value | Description |
+| --- | --- | --- |
+| `quality` | `100` | Quality of the JPEG. Uncompressed by default, so the resulting image may be bigger than the original one. |
+| `jpegjsMaxResolutionInMP` | `jpeg-js` default | `maxResolutionInMP` option in `jpeg-js` ([doc](https://github.com/eugeneware/jpeg-js#decode-options)) |
+| `jpegjsMaxMemoryUsageInMB` | `jpeg-js` default | `maxMemoryUsageInMB` option in `jpeg-js` ([doc](https://github.com/eugeneware/jpeg-js#decode-options)) |
+
 ### CLI
 
+Rotate a single image:
+
 ```bash
-# Rotates a single image
 $ jpeg-autorotate /Users/johan/IMG_1234.jpg
-# Rotates a set of images
+```
+
+Rotate a set of images:
+
+```bash
 $ jpeg-autorotate /Users/johan/images/IMG_*.jpg
-# Glob support
+```
+
+Glob support:
+
+```bash
 $ jpeg-autorotate "/Users/johan/images/IMG_*.{jpg,jpeg,JPG,JPEG}"
+```
+
+Passing options:
+
+```
+$ jpeg-autorotate /Users/johan/IMG_1234.jpg --quality=85 --jpegjsMaxResolutionInMP=1234
 ```
 
 ### Node module
 
-The tool is available as a Node module. It will load the image, apply the rotation, and return the binary data as a [Buffer](https://nodejs.org/api/buffer.html), allowing you to:
+The Node module will load the image, apply the rotation, and return the binary data as a [Buffer](https://nodejs.org/api/buffer.html), allowing you to:
 
 * Save it on disk
 * Load it in an image processing module (like [jimp](https://github.com/oliver-moran/jimp), [lwip](https://github.com/EyalAr/lwip), [gm](https://github.com/aheckmann/gm)...)
@@ -78,10 +102,13 @@ The tool is available as a Node module. It will load the image, apply the rotati
 
 #### Sample usage
 
-```javascript
+```js
 const jo = require('jpeg-autorotate')
-const options = {quality: 85}
-const path = '/Users/johan/IMG_1234.jpg' // You can use a Buffer, too
+const options = {
+  quality: 8,
+  jpegjsMaxResolutionInMP: 1234,
+}
+const path = '/Users/johan/IMG_1234.jpg' // You can use a Buffer too
 
 //
 // With a callback:
@@ -116,7 +143,7 @@ jo.rotate(path, options)
 
 The `error` object returned by the module contains a readable `message`, but also a `code` for better error handling. Available codes are the following:
 
-```javascript
+```js
 const jo = require('jpeg-autorotate')
 
 jo.errors.read_file // File could not be opened
@@ -127,9 +154,9 @@ jo.errors.correct_orientation // The image orientation is already correct
 jo.errors.rotate_file // An error occurred when rotating the image
 ```
 
-Sample usage:
+Example:
 
-```javascript
+```js
 const jo = require('jpeg-autorotate')
 jo.rotate('/image.jpg')
   .catch((error) => {
@@ -139,36 +166,24 @@ jo.rotate('/image.jpg')
   })
 ```
 
-#### Thumbnail too large
+## Troubleshooting
 
-If you get the error "Given thumbnail is too large. max 64kB", you can remove the thumbnail before rotating the image:
+### Thumbnail too large
 
-```javascript
+The [piexifjs](https://github.com/hMatoba/piexifjs/) module has a [64kb limit](https://github.com/hMatoba/piexifjs/blob/7b9140ab8ebb8ff620bb20f6319a337dd150092b/piexif.js#L236-L243) when reading thumbnails.
+If you get the _Given thumbnail is too large_ error, you can try to remove the thumbnail from the image before rotating it:
+
+```js
 import piexif from 'piexifjs'
 
 function deleteThumbnailFromExif(imageBuffer) {
   const imageString = imageBuffer.toString('binary')
   const exifObj = piexif.load(imageString)
-  delete exifObj.thumbnail
+  delete exifObj['thumbnail']
   delete exifObj['1st']
   const exifBytes = piexif.dump(exifObj)
-  const newImageString = piexif.insert(exifBytes, imageString)
-  return Buffer.from(newImageString, 'binary')
+  return Buffer.from(piexif.insert(exifBytes, imageString), 'binary')
 }
-```
-
-### Options
-
-The following options are available.
-
-| Option | Context | Default value | Description |
-| --- | --- | --- | --- |
-| `quality` | _CLI, module_ | 100 | Quality of the JPEG - Uncompressed by default, so the resulting image may be bigger than the original one |
-
-To use options with the CLI:
-
-```
-$ jpeg-autorotate /image.jpg --quality=85
 ```
 
 ## Changelog

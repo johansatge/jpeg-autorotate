@@ -20,14 +20,23 @@ m.errors = {
  */
 m.rotate = function (pathOrBuffer, options, callback) {
   const hasCallback = typeof callback === 'function'
-  const quality = parseQuality(options.quality)
+  const quality =
+    typeof options.quality === 'number' && options.quality > 0 && options.quality <= 100 ? options.quality : 100
+  const maxResolutionInMP =
+    typeof options.jpegjsMaxResolutionInMP === 'number' && options.jpegjsMaxResolutionInMP > 0
+      ? options.jpegjsMaxResolutionInMP
+      : null
+  const maxMemoryUsageInMB =
+    typeof options.jpegjsMaxMemoryUsageInMB === 'number' && options.jpegjsMaxMemoryUsageInMB > 0
+      ? options.jpegjsMaxMemoryUsageInMB
+      : null
   const promise = readBuffer(pathOrBuffer)
     .then(readExifFromBuffer)
     .then(({buffer, exifData}) => {
       const orientation = parseOrientationTag({buffer, exifData})
       return Promise.all([
-        rotateImage(buffer, orientation, quality),
-        rotateThumbnail(buffer, exifData, orientation, quality),
+        rotateImage(buffer, orientation, quality, maxResolutionInMP, maxMemoryUsageInMB),
+        rotateThumbnail(buffer, exifData, orientation, quality, maxResolutionInMP, maxMemoryUsageInMB),
       ]).then(([image, thumbnail]) => {
         return computeFinalBuffer(image, thumbnail, exifData, orientation)
       })
@@ -49,19 +58,6 @@ m.rotate = function (pathOrBuffer, options, callback) {
   if (!hasCallback) {
     return promise
   }
-}
-
-/**
- * Parse the target JPEG quality
- * (Got from the CLI or the public API)
- */
-function parseQuality(rawQuality) {
-  const defaultQuality = 100
-  if (typeof rawQuality !== 'number') {
-    return defaultQuality
-  }
-  const quality = parseInt(rawQuality)
-  return quality > 0 && quality <= 100 ? quality : defaultQuality
 }
 
 /**
@@ -110,17 +106,23 @@ function parseOrientationTag({buffer, exifData}) {
   return orientation
 }
 
-function rotateImage(buffer, orientation, quality) {
-  return rotateBuffer(buffer, orientation, quality).catch((error) => {
+function rotateImage(buffer, orientation, quality, maxResolutionInMP, maxMemoryUsageInMB) {
+  return rotateBuffer(buffer, orientation, quality, maxResolutionInMP, maxMemoryUsageInMB).catch((error) => {
     throw new CustomError(m.errors.rotate_file, 'Could not rotate image (' + error.message + ')', buffer)
   })
 }
 
-function rotateThumbnail(buffer, exifData, orientation, quality) {
+function rotateThumbnail(buffer, exifData, orientation, quality, maxResolutionInMP, maxMemoryUsageInMB) {
   if (typeof exifData['thumbnail'] === 'undefined' || exifData['thumbnail'] === null) {
     return Promise.resolve({})
   }
-  return rotateBuffer(Buffer.from(exifData['thumbnail'], 'binary'), orientation, quality).catch((error) => {
+  return rotateBuffer(
+    Buffer.from(exifData['thumbnail'], 'binary'),
+    orientation,
+    quality,
+    maxResolutionInMP,
+    maxMemoryUsageInMB
+  ).catch((error) => {
     throw new CustomError(m.errors.rotate_file, 'Could not rotate thumbnail (' + error.message + ')', buffer)
   })
 }

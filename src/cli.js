@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const argv = require('yargs').argv
+const yargsParser = require('yargs-parser')
 const colors = require('colors')
 const fs = require('fs')
 const glob = require('glob')
@@ -8,12 +8,17 @@ const jo = require('./main.js')
 const manifest = require('../package.json')
 const promisify = require('util').promisify
 
+const argv = yargsParser(process.argv.slice(2), {
+  boolean: ['version', 'help'],
+  number: ['quality', 'jpegjsMaxResolutionInMP', 'jpegjsMaxMemoryUsageInMB'],
+})
+
 if (argv.version) {
   console.log(manifest.name + ' ' + manifest.version)
   process.exit(0)
 }
 
-if (argv.help || typeof argv._ === 'undefined' || argv._.length === 0) {
+if (argv.help || argv._.length === 0) {
   const help = [
     '',
     'Rotate JPEG images based on EXIF orientation',
@@ -22,9 +27,11 @@ if (argv.help || typeof argv._ === 'undefined' || argv._.length === 0) {
     'jpeg-autorotate <path>',
     '',
     colors.underline('Options'),
-    '--quality=<0-100>   JPEG output quality',
-    '--version           Output current version',
-    '--help              Output help',
+    '--quality=<1-100>                  JPEG output quality',
+    '--jpegjsMaxResolutionInMP=<num>    jpeg-js maxResolutionInMP option',
+    '--jpegjsMaxMemoryUsageInMB=<num>   jpeg-js maxMemoryUsageInMB option',
+    '--version                          Output current version',
+    '--help                             Output help',
     '',
   ]
   console.log(help.join('\n'))
@@ -52,8 +59,13 @@ function processFiles(files, index = 0) {
     return Promise.resolve()
   }
   const filePath = files[index]
+  const options = {
+    quality: argv.quality,
+    jpegjsMaxResolutionInMP: argv.jpegjsMaxResolutionInMP,
+    jpegjsMaxMemoryUsageInMB: argv.jpegjsMaxMemoryUsageInMB,
+  }
   return jo
-    .rotate(filePath, {quality: argv.quality})
+    .rotate(filePath, options)
     .then(({buffer, orientation, quality, dimensions}) => {
       return promisify(fs.writeFile)(files[index], buffer).then(() => {
         return {orientation, quality, dimensions}
