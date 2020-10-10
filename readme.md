@@ -193,6 +193,7 @@ This project uses [semver](http://semver.org/).
 
 | Version | Date | Notes |
 | --- | --- | --- |
+| `7.1.1` | 2020-10-11 | Introduce code coverage<br>Fix an error if `options` are not passed |
 | `7.1.0` | 2020-10-10 | Introduce `jpegjsMaxResolutionInMP` & `jpegjsMaxMemoryUsageInMB` options (#26) |
 | `7.0.0` | 2020-09-19 | Don't publish test and linting files on NPM |
 | `6.0.0` | 2020-05-30 | Dependencies update<br>Drop support for Node < 10<br>From `jpeg-js` update: _images larger than 100 megapixels or requiring more than 512MB of memory to decode will throw_ |
