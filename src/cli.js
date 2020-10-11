@@ -2,7 +2,7 @@
 
 const yargsParser = require('yargs-parser')
 const colors = require('colors')
-const fs = require('fs')
+const fsp = require('fs').promises
 const glob = require('glob')
 const jo = require('./main.js')
 const manifest = require('../package.json')
@@ -38,51 +38,24 @@ if (argv.help || argv._.length === 0) {
   process.exit(0)
 }
 
-listFiles()
-  .then(processFiles)
-  .then(() => {
-    process.exit(0)
-  })
-
-function listFiles() {
-  return Promise.all(argv._.map((arg) => promisify(glob)(arg, {}))).then((files) => {
-    return [].concat.apply([], files)
-  })
-}
-
-function processFiles(files, index = 0) {
-  if (index + 1 > files.length) {
-    return Promise.resolve()
-  }
-  const filePath = files[index]
-  const options = {
-    quality: argv.quality,
-    jpegjsMaxResolutionInMP: argv.jpegjsMaxResolutionInMP,
-    jpegjsMaxMemoryUsageInMB: argv.jpegjsMaxMemoryUsageInMB,
-  }
-  return jo
-    .rotate(filePath, options)
-    .then(({buffer, orientation, quality, dimensions}) => {
-      return promisify(fs.writeFile)(files[index], buffer).then(() => {
-        return {orientation, quality, dimensions}
-      })
-    })
-    .then(({orientation, quality, dimensions}) => {
-      const message =
-        'Processed (Orientation: ' +
-        orientation +
-        ') (Quality: ' +
-        quality +
-        '%) (Dimensions: ' +
-        dimensions.width +
-        'x' +
-        dimensions.height +
-        ')'
-      console.log(filePath + ': ' + colors.green(message))
-    })
-    .catch((error) => {
+// eslint-disable-next-line no-extra-semi
+;(async () => {
+  const files = await Promise.all(argv._.map((arg) => promisify(glob)(arg))).then((files) => [].concat.apply([], files))
+  for (const filePath of files) {
+    const options = {
+      quality: argv.quality,
+      jpegjsMaxResolutionInMP: argv.jpegjsMaxResolutionInMP,
+      jpegjsMaxMemoryUsageInMB: argv.jpegjsMaxMemoryUsageInMB,
+    }
+    try {
+      const {buffer, orientation, quality, dimensions} = await jo.rotate(filePath, options)
+      await fsp.writeFile(filePath, buffer)
+      const readableDimensions = `${dimensions.width}x${dimensions.height}`
+      const message = `Processed (Orientation: ${orientation}) (Quality: ${quality}%) (Dimensions: ${readableDimensions})`
+      console.log(`${filePath}: ${colors.green(message)}`)
+    } catch (error) {
       const isFatal = error.code !== jo.errors.correct_orientation
-      console.log(filePath + ': ' + (isFatal ? colors.red(error.message) : colors.yellow(error.message)))
-    })
-    .then(() => processFiles(files, index + 1))
-}
+      console.log(`${filePath}: ${isFatal ? colors.red(error.message) : colors.yellow(error.message)}`)
+    }
+  }
+})()
