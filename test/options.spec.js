@@ -5,6 +5,8 @@ const execPromise = require('util').promisify(require('child_process').exec)
 const jo = require('../src/main.js')
 const manifest = require('../package.json')
 const path = require('path')
+const crypto = require('crypto')
+const fsp = require('fs').promises
 
 describe('options', () => {
   it('Should display version number with --version (cli)', async () => {
@@ -72,13 +74,23 @@ describe('options', () => {
     }
   })
 
-  // @todo quality with cli
+  it('Should default to the right quality (cli)', async () => {
+    const originPath = path.join(__dirname, 'samples/image_5.jpg')
+    const refBuffer = await fsp.readFile(path.join(__dirname, 'samples/image_5_ref100.jpg'))
+    const refMd5 = crypto.createHash('md5').update(refBuffer.toString('binary')).digest('hex')
+    const destPath = path.join(__dirname, 'samples/image_5_cli_options.jpg')
+    const command = ['cp ' + originPath + ' ' + destPath, './src/cli.js ' + destPath + ' --quality=invalid']
+    await execPromise(command.join(' && '))
+    const buffer = await fsp.readFile(destPath)
+    await fsp.unlink(destPath)
+    expect(crypto.createHash('md5').update(buffer.toString('binary')).digest('hex')).to.equal(refMd5)
+  })
 
-  // @todo jpegjsMaxMemoryUsageInMB with module
-  // @todo jpegjsMaxResolutionInMP with module
-  // @todo quality with module
-
-  // @todo jpegjsMaxMemoryUsageInMB default
-  // @todo jpegjsMaxResolutionInMP default
-  // @todo quality default
+  it('Should default to the right quality (promise)', async () => {
+    const refBuffer = await fsp.readFile(path.join(__dirname, 'samples/image_5_ref100.jpg'))
+    const refMd5 = crypto.createHash('md5').update(refBuffer.toString('binary')).digest('hex')
+    const originPath = path.join(__dirname, 'samples/image_5.jpg')
+    const {buffer} = await jo.rotate(originPath, {quality: 'invalid'})
+    expect(crypto.createHash('md5').update(buffer.toString('binary')).digest('hex')).to.equal(refMd5)
+  })
 })
