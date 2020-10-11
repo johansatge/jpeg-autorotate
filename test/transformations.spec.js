@@ -7,6 +7,7 @@ const jo = require('../src/main.js')
 const path = require('path')
 const crypto = require('crypto')
 const execPromise = require('util').promisify(require('child_process').exec)
+const md5FromBuffer = (buffer) => crypto.createHash('md5').update(buffer.toString('binary')).digest('hex')
 
 const images = [
   {fileName: 'image_2.jpg', width: 600, height: 450, orientation: 2},
@@ -25,14 +26,14 @@ describe('transformations', function () {
     const {fileName, width, height, orientation} = images[index]
     const filePath = path.join(__dirname, '/samples/' + fileName)
     const refBuffer = fs.readFileSync(filePath.replace('.jpg', '_ref82.jpg'))
-    const refMd5 = crypto.createHash('md5').update(refBuffer.toString('binary')).digest('hex')
+    const refMd5 = md5FromBuffer(refBuffer)
     itShouldTransformWithCallback(filePath, fileName, width, height, orientation, refMd5)
     itShouldTransformWithPromise(filePath, fileName, width, height, orientation, refMd5)
     itShouldTransformWithCli(filePath, fileName, width, height, orientation, refMd5)
   }
   const buffer = fs.readFileSync(path.join(__dirname, '/samples/image_8.jpg'))
   const refBuffer = fs.readFileSync(path.join(__dirname, '/samples/image_8_ref82.jpg'))
-  const refMd5 = crypto.createHash('md5').update(refBuffer.toString('binary')).digest('hex')
+  const refMd5 = md5FromBuffer(refBuffer)
   itShouldTransformWithCallback(buffer, 'image_8 buffer', 600, 450, 8, refMd5)
   itShouldTransformWithPromise(buffer, 'image_8 buffer', 600, 450, 8, refMd5)
 })
@@ -76,6 +77,6 @@ function itShouldTransformWithCli(originPath, label, refWidth, refHeight, refOri
     expect(parseInt(output[3])).to.equal(refWidth)
     expect(parseInt(output[4])).to.equal(refHeight)
     expect(parseInt(output[1])).to.equal(refOrientation)
-    expect(crypto.createHash('md5').update(buffer.toString('binary')).digest('hex')).to.equal(refMd5)
+    expect(md5FromBuffer(buffer)).to.equal(refMd5)
   })
 }
