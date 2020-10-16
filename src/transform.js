@@ -1,21 +1,22 @@
 const jpegjs = require('jpeg-js')
 
 const m = {}
+module.exports = m
 
 /**
  * Decode the given buffer and applies the right transformation
  * Depending on the orientation, it may be a rotation and / or an horizontal flip
  */
-m.rotateBuffer = function (buffer, orientation, quality, maxResolutionInMP, maxMemoryUsageInMB) {
+m.rotateBuffer = (buffer, orientation, quality, maxResolutionInMP, maxMemoryUsageInMB) => {
   let jpeg = null
+  const options = {}
+  if (maxResolutionInMP !== null) {
+    options.maxResolutionInMP = maxResolutionInMP
+  }
+  if (maxMemoryUsageInMB !== null) {
+    options.maxMemoryUsageInMB = maxMemoryUsageInMB
+  }
   try {
-    const options = {}
-    if (maxResolutionInMP !== null) {
-      options.maxResolutionInMP = maxResolutionInMP
-    }
-    if (maxMemoryUsageInMB !== null) {
-      options.maxMemoryUsageInMB = maxMemoryUsageInMB
-    }
     jpeg = jpegjs.decode(buffer, options)
   } catch (error) {
     return Promise.reject(error)
@@ -89,5 +90,3 @@ function flipPixels(buffer, width, height) {
   }
   return newBuffer
 }
-
-module.exports = m

@@ -1,3 +1,8 @@
 comment:
   layout: "diff, files"
   require_changes: true
+coverage:
+  status:
+    patch:
+      default:
+        threshold: 5%
