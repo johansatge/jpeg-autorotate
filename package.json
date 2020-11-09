@@ -35,6 +35,7 @@
     "cli"
   ],
   "dependencies": {
+    "@types/jpeg-autorotate": "^5.0.0",
     "colors": "^1.4.0",
     "glob": "^7.1.6",
     "jpeg-js": "^0.4.2",
