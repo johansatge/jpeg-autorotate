@@ -23,6 +23,7 @@
   * [Thumbnail too large](#thumbnail-too-large)
 * [Changelog](#changelog)
 * [License](#license)
+* [Contributing](#contributing)
 * [Credits](#credits)
 
 ## What does it do
@@ -216,6 +217,10 @@ This project uses [semver](http://semver.org/).
 ## License
 
 This project is released under the [MIT License](license.md).
+
+## Contributing
+
+Bug reports and feature requests are welcome! More details in the [contribution guidelines](contributing.md).
 
 ## Credits
 
