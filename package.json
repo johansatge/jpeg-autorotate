@@ -1,7 +1,7 @@
 {
   "name": "jpeg-autorotate",
-  "version": "7.1.1",
-  "description": "Rotates JPEG images based on EXIF orientation",
+  "version": "8.0.0",
+  "description": "Rotate JPEG images based on EXIF orientation",
   "author": "Johan Satgé",
   "bin": {
     "jpeg-autorotate": "./src/cli.js"

@@ -194,6 +194,7 @@ This project uses [semver](http://semver.org/).
 
 | Version | Date | Notes |
 | --- | --- | --- |
+| `8.0.0` | 2021-11-12 | Node 16 support<br>Drop support for Node 10 |
 | `7.1.1` | 2020-10-11 | Introduce code coverage<br>Fix an error if `options` are not passed |
 | `7.1.0` | 2020-10-10 | Introduce `jpegjsMaxResolutionInMP` & `jpegjsMaxMemoryUsageInMB` options (#26) |
 | `7.0.0` | 2020-09-19 | Don't publish test and linting files on NPM |
