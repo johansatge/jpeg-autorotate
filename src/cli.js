@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
 const yargsParser = require('yargs-parser')
-const colors = require('colors')
 const fsp = require('fs').promises
 const glob = require('glob')
 const jo = require('./main.js')
+const cliStyle = require('./clistyle.js')
 const manifest = require('../package.json')
 const promisify = require('util').promisify
 
@@ -23,10 +23,10 @@ if (argv.help || argv._.length === 0) {
     '',
     'Rotate JPEG images based on EXIF orientation',
     '',
-    colors.underline('Usage'),
+    cliStyle.underline('Usage'),
     'jpeg-autorotate <path>',
     '',
-    colors.underline('Options'),
+    cliStyle.underline('Options'),
     '--quality=<1-100>                  JPEG output quality',
     '--jpegjsMaxResolutionInMP=<num>    jpeg-js maxResolutionInMP option',
     '--jpegjsMaxMemoryUsageInMB=<num>   jpeg-js maxMemoryUsageInMB option',
@@ -52,10 +52,10 @@ if (argv.help || argv._.length === 0) {
       await fsp.writeFile(filePath, buffer)
       const readableDimensions = `${dimensions.width}x${dimensions.height}`
       const message = `Processed (Orientation: ${orientation}) (Quality: ${quality}%) (Dimensions: ${readableDimensions})`
-      console.log(`${filePath}: ${colors.green(message)}`)
+      console.log(`${filePath}: ${cliStyle.green(message)}`)
     } catch (error) {
       const isFatal = error.code !== jo.errors.correct_orientation
-      console.log(`${filePath}: ${isFatal ? colors.red(error.message) : colors.yellow(error.message)}`)
+      console.log(`${filePath}: ${isFatal ? cliStyle.red(error.message) : cliStyle.yellow(error.message)}`)
     }
   }
 })()

@@ -228,7 +228,6 @@ Bug reports and feature requests are welcome! More details in the [contribution 
 * [piexifjs](https://github.com/hMatoba/piexifjs)
 * [jpeg-js](https://github.com/eugeneware/jpeg-js)
 * [exif-orientation-examples](https://github.com/recurser/exif-orientation-examples)
-* [colors](https://github.com/Marak/colors.js)
 * [yargs](https://github.com/bcoe/yargs)
 * [FontAwesome](http://fontawesome.io/)
 * [Chai](http://chaijs.com/)
