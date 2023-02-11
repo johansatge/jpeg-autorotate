@@ -194,6 +194,7 @@ This project uses [semver](http://semver.org/).
 
 | Version | Date | Notes |
 | --- | --- | --- |
+| `9.0.0` | 2023-02-11 | Drop Node 12 support |
 | `8.0.1` | 2022-01-10 | Remove `colors` package from dependencies |
 | `8.0.0` | 2021-11-12 | Node 16 support<br>Drop support for Node 10 |
 | `7.1.1` | 2020-10-11 | Introduce code coverage<br>Fix an error if `options` are not passed |
